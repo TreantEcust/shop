@@ -49,4 +49,7 @@ train_df=pd.read_csv('data/训练数据-ccf_first_round_user_shop_behavior.csv')
 # plt.legend()
 # plt.show()
 
+#统计商城内店的数量
+# shop_count = shop_df.groupby('mall_id',as_index=False)['shop_id'].agg({'shop_count':'count'})['shop_count'].values
+
 
