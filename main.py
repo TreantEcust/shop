@@ -3,6 +3,7 @@ import time
 import numpy as np
 import gc
 import biuld_set
+import biuld_feature
 
 train_path='data/训练数据-ccf_first_round_user_shop_behavior.csv'
 test_path='data/AB榜测试集-evaluation_public.csv'
@@ -28,7 +29,7 @@ def train_split(train,shop_info):
     train1 = train.loc[train1_index]
     train2 = train.loc[train2_index]
     train1.dropna(axis=0, how='any',inplace=True)
-    train2.dropna(axis=0, how='any', inplace=True)
+    train2.dropna(axis=0, how='any',inplace=True)
     train2 = pd.merge(train2, shop_info[['shop_id', 'mall_id']], on='shop_id', how='left')
     train2.rename(columns={'shop_id': 'real_shop_id'}, inplace=True)
     train2.loc[:, 'label'] = 0
@@ -36,6 +37,15 @@ def train_split(train,shop_info):
     train2.rename(columns={'index': 'row_id'}, inplace=True)  # 模拟测试集
 
     return train1,train2
+
+#重命名（为后续样本merge）
+def rename(train1,train,shop_info):
+    shop_info.rename(columns={'longitude': 'longitude_shop','latitude':'latitude_shop'}, inplace=True)
+    train1.rename(columns={'longitude': 'longitude_train','latitude':'latitude_train','time_stamp':'time_stamp_train',
+                           'wifi_infos':'wifi_infos_train'}, inplace=True)
+    train.rename(columns={'longitude': 'longitude_train', 'latitude': 'latitude_train', 'time_stamp': 'time_stamp_train',
+                 'wifi_infos': 'wifi_infos_train'}, inplace=True)
+    return train1,train,shop_info
 
 if __name__ == "__main__":
     t0 = time.time()
@@ -46,10 +56,15 @@ if __name__ == "__main__":
     train,validation=train_val_split(train,shop_info)#train用于构造validation的特征
     train1,train2=train_split(train,shop_info)#train1用于构造train2的特征
 
+    #原特征改名
+    train1,train,shop_info=rename(train1,train,shop_info)
+
     print('构造训练集')
-    train_feat = biuld_set.make(train1, train2, shop_info)
+    train_result = biuld_set.make(train1, train2, shop_info)
+    train_feat = biuld_feature.feat(train, train_result, shop_info)
     train_feat.to_csv('data/train_feat.csv')
-    del train1, train2, train_feat
+    print('----------------------------------------------------')
+    del train1, train2, train_result, train_feat
     gc.collect()
 
     print('构造验证集')
