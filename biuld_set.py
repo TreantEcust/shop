@@ -3,7 +3,7 @@ import numpy as np
 
 #加入用户在train中去过的店铺作为负样本
 def get_user_history(train,test,shop_info):
-    train = pd.merge(train, shop_info, on='shop_id', how='left')
+    train = pd.merge(train, shop_info, on=['shop_id'], how='left').drop('mall_id', axis=1)
     result = pd.merge(test,train,on='user_id',how='left')
     result.dropna(axis=0, how='any',inplace=True)
 

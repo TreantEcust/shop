@@ -47,6 +47,11 @@ def rename(train1,train,shop_info):
                  'wifi_infos': 'wifi_infos_train'}, inplace=True)
     return train1,train,shop_info
 
+# 设置类标
+def label_set(result):
+    result.loc[:, 'label'] = (result['real_shop_id'] == result['shop_id']).astype('int')
+    return result
+
 if __name__ == "__main__":
     t0 = time.time()
     train = pd.read_csv(train_path)
@@ -62,13 +67,14 @@ if __name__ == "__main__":
     print('构造训练集')
     train_result = biuld_set.make(train1, train2, shop_info)
     train_feat = biuld_feature.feat(train, train_result, shop_info)
+    train_feat = label_set(train_feat)
     train_feat.to_csv('data/train_feat.csv')
     print('----------------------------------------------------')
     del train1, train2, train_result, train_feat
     gc.collect()
 
-    print('构造验证集')
-    validation_feat = biuld_set.make(train, validation, shop_info)
-    validation_feat.to_csv('data/validation_feat.csv')
+    # print('构造验证集')
+    # validation_feat = biuld_set.make(train, validation, shop_info)
+    # validation_feat.to_csv('data/validation_feat.csv')
     print('一共用时{}秒'.format(time.time() - t0))
 
