@@ -38,7 +38,7 @@ def get_hot_shop(train,result,shop_info):
     result.loc[:,'hot_point']=0
     return result
 
-#
+# 添加用户访问该店次数
 def get_user_times(result):
     result.loc[:,'user_times']=0
     return result
