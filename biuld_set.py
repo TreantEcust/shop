@@ -1,5 +1,4 @@
 import pandas as pd
-import numpy as np
 
 #加入用户在train中去过的店铺作为负样本
 def get_user_history(train,test,shop_info):
@@ -18,11 +17,6 @@ def get_nearest(train,test,shop_info):
     result.sort_values('shop_dis', inplace=True,ascending=False)
     result = result.groupby('row_id').tail(N)
 
-    # #临时统计正确结果的覆盖率
-    # result.loc[:,'label']=(result['real_shop_id']==result['shop_id'])
-    # ok=result['label'].values
-    # print(np.sum(ok)/(len(ok)/N))
-
     #补全用户历史信息
     result=pd.merge(result,train,on=['user_id','shop_id'],how='left')#无需去除na
     #删去shop_dis
@@ -37,4 +31,12 @@ def make(train, test, shop_info):
     #负类样本汇总
     result= pd.concat([user_history_shop,nearest_shop])#不去重
     print('负类样本构造完毕，总数：'+str(result.shape[0]))
+
+    #临时统计正确结果的覆盖率
+    result.loc[:,'label_temp']=(result['real_shop_id']==result['shop_id']).astype('int')
+    result_temp=result[(result['label_temp']==1)][['row_id','label_temp']].drop_duplicates()
+    total_num=result['row_id'].drop_duplicates()
+    print('正类样本覆盖率：'+str(result_temp.shape[0]/total_num.shape[0]))
+    result.drop('label_temp', axis=1, inplace=True)
+
     return result

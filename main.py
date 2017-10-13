@@ -5,8 +5,8 @@ import gc
 import biuld_set
 import biuld_feature
 
-train_path='data/训练数据-ccf_first_round_user_shop_behavior.csv'
-test_path='data/AB榜测试集-evaluation_public.csv'
+train_path='data/train_data.csv'
+test_path='data/test_data.csv'
 shop_path='data/训练数据-ccf_first_round_shop_info.csv'
 
 def train_val_split(train,shop_info):
@@ -42,9 +42,9 @@ def train_split(train,shop_info):
 def rename(train1,train,shop_info):
     shop_info.rename(columns={'longitude': 'longitude_shop','latitude':'latitude_shop'}, inplace=True)
     train1.rename(columns={'longitude': 'longitude_train','latitude':'latitude_train','time_stamp':'time_stamp_train',
-                           'wifi_infos':'wifi_infos_train'}, inplace=True)
+                           'wifi_infos':'wifi_infos_train','wday':'wday_train','minutes':'minutes_train'}, inplace=True)
     train.rename(columns={'longitude': 'longitude_train', 'latitude': 'latitude_train', 'time_stamp': 'time_stamp_train',
-                 'wifi_infos': 'wifi_infos_train'}, inplace=True)
+                 'wifi_infos': 'wifi_infos_train','wday':'wday_train','minutes':'minutes_train'}, inplace=True)
     return train1,train,shop_info
 
 # 设置类标
@@ -66,7 +66,7 @@ if __name__ == "__main__":
 
     print('构造训练集')
     train_result = biuld_set.make(train1, train2, shop_info)
-    train_feat = biuld_feature.feat(train, train_result, shop_info)
+    train_feat = biuld_feature.feat(train1, train_result)
     train_feat = label_set(train_feat)
     train_feat.to_csv('data/train_feat.csv')
     print('----------------------------------------------------')
@@ -74,7 +74,9 @@ if __name__ == "__main__":
     gc.collect()
 
     # print('构造验证集')
-    # validation_feat = biuld_set.make(train, validation, shop_info)
+    # validation_result = biuld_set.make(train, validation, shop_info)
+    # validation_feat = biuld_feature.feat(train,validation_result)
+    # validation_feat=label_set(validation_feat)
     # validation_feat.to_csv('data/validation_feat.csv')
-    print('一共用时{}秒'.format(time.time() - t0))
+    # print('一共用时{}秒'.format(time.time() - t0))
 

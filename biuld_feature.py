@@ -25,33 +25,38 @@ def get_dis_shop(result):
 
 # 购买和历史时间差
 def get_time_diff(result):
-    result.loc[:,'time_diff']=0
+    result.loc[:,'time_diff']=abs(result['minutes']-result['minutes_train'])
     return result
 
 # 购买和历史是否同属周末（或工作日)
 def get_weekday_diff(result):
-    result.loc[:,'weekday_diff']=0
+    result.loc[:,'weekday_diff']=abs(result['wday']-result['wday_train'])
     return result
 
 # 添加店内热度
-def get_hot_shop(train,result,shop_info):
-    result.loc[:,'hot_point']=0
+def get_hot_shop(train,result):
+    #统计热度
+    shop_hot_point=train.groupby('shop_id',as_index=False)['user_id'].agg({'hot_point':'count'})
+    result=pd.merge(result,shop_hot_point,on='shop_id',how='left')
+    result['hot_point'].fillna(0, inplace=True)
     return result
 
 # 添加用户访问该店次数
-def get_user_times(result):
-    result.loc[:,'user_times']=0
+def get_user_times(train,result):
+    user_times=train.groupby(['user_id','shop_id'],as_index=False)['user_id'].agg({'user_times':'count'})
+    result=pd.merge(result,user_times,on=['user_id','shop_id'],how='left')
+    result['user_times'].fillna(0, inplace=True)
     return result
 
-def feat(train,result,shop_info):
+def feat(train,result):
     ori_feat=list(result.columns)
     print('开始构造特征...')
     result = get_dis(result)  # 购买和历史距离
     result = get_dis_shop(result)  # 购买和店距离
     result = get_time_diff(result)  # 购买和历史时间差
     result = get_weekday_diff(result)  # 购买和历史是否同属周末（或工作日）
-    result = get_hot_shop(train,result,shop_info) # 添加店内热度
-    result = get_user_times(result) # 添加用户访问该店次数
+    result = get_hot_shop(train,result) # 添加店内热度
+    result = get_user_times(train,result) # 添加用户访问该店次数
 
     #特征统计
     final_feat=list(result.columns)
