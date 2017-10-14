@@ -52,4 +52,31 @@ train_df=pd.read_csv('data/训练数据-ccf_first_round_user_shop_behavior.csv')
 #统计商城内店的数量
 # shop_count = shop_df.groupby('mall_id',as_index=False)['shop_id'].agg({'shop_count':'count'})['shop_count'].values
 
+# shop wifi地址统计
+def wifi_count(df_train):
+    dict_shop={}
+    N=-50
+    s_in_train=df_train['shop_id'].values
+    wifi_in_train=df_train['wifi_infos'].values
+    num_all=[]
+    for i,s in enumerate(s_in_train):
+        print(i)
+        if s not in dict_shop:
+            dict_shop[s]={}
+        w=wifi_in_train[i].split(';')
+        wifi_ssid=[]
+        wifi_dis=[]
+        wifi_bool=[]
+        for s in w:
+            infos=s.split('|')
+            wifi_ssid.append(infos[0])
+            wifi_dis.append(int(infos[1]))
+            wifi_bool.append(infos[2])
+        wifi_dis=np.array(wifi_dis)
+        num_all.append(len(np.nonzero(wifi_dis<N)[0]))
+    plt.hist(x=pd.Series(num_all).dropna(), bins=50, facecolor='red', label='num<-50')
+    plt.legend()
+    plt.show()
+shop_info=wifi_count(train_df)
+
 
