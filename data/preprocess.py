@@ -48,13 +48,20 @@ def wifi_count(shop_info,df_train):
             wifi_dis.append(int(infos[1]))
         wifi_ssid=np.array(wifi_ssid)
         wifi_dis=np.array(wifi_dis)
-        add_index=np.where(wifi_dis<limit)[0]
+        add_index=np.where(wifi_dis>limit)[0]
         wifi_ssid=wifi_ssid[add_index]
-        for wi in wifi_ssid:
+        wifi_dis=wifi_dis[add_index]
+        for j,wi in enumerate(wifi_ssid):
             if wi not in dict_shop[s]:
-                dict_shop[s][wi]=1
+                dict_shop[s][wi]={}
+                dict_shop[s][wi]['num']=1
+                dict_shop[s][wi]['ss']=wifi_dis[j]
             else:
-                dict_shop[s][wi]+=1
+                dict_shop[s][wi]['num']+=1
+                dict_shop[s][wi]['ss'] += wifi_dis[j]
+    for k1 in dict_shop:
+        for k2 in dict_shop[k1]:
+            dict_shop[k1][k2]['ss']/=dict_shop[k1][k2]['num']
     shop_info.loc[:,'wifi_infos']=0
     shop_info=shop_info.apply(lambda x:set_wifi(x,dict_shop),axis=1)
 
