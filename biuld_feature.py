@@ -42,21 +42,43 @@ def get_hot_shop(train,result):
     return result
 
 # 添加用户访问该店次数
-def get_user_times(train,result):
-    user_times=train.groupby(['user_id','shop_id'],as_index=False)['user_id'].agg({'user_times':'count'})
-    result=pd.merge(result,user_times,on=['user_id','shop_id'],how='left')
-    result['user_times'].fillna(0, inplace=True)
+def get_shop_times(train,result):
+    user_shop_times=train.groupby(['user_id','shop_id'],as_index=False)['user_id'].agg({'user_shop_times':'count'})
+    result=pd.merge(result,user_shop_times,on=['user_id','shop_id'],how='left')
+    result['user_shop_times'].fillna(0, inplace=True)
     return result
+
+def get_mall_times(train,result):
+    user_mall_times = train.groupby(['user_id', 'mall_id'], as_index=False)['user_id'].agg({'user_mall_times': 'count'})
+    result = pd.merge(result, user_mall_times, on=['user_id', 'mall_id'], how='left')
+    result['user_mall_times'].fillna(0, inplace=True)
+    return result
+
+def get_shopmall(result):
+    result.loc[:,'user_shopmall']=result['user_shop_times']/(result['user_mall_times']+0.0001)
+
+def get_time(result):
+    result.rename(columns={'time_stamp': 'time_min'}, inplace=True)
+    return result
+
+def get_wday(result):
+    result.rename(columns={'wday':'is_wday'},inplace=True)
+    return result
+
+def get_wifi_count(result):
+    result.rename(columns={'wifi_select':'wifi_count'},inplace=True)
 
 def feat(train,result):
     ori_feat=list(result.columns)
     print('开始构造特征...')
-    result = get_dis(result)  # 购买和历史距离
     result = get_dis_shop(result)  # 购买和店距离
-    result = get_time_diff(result)  # 购买和历史时间差
-    result = get_weekday_diff(result)  # 购买和历史是否同属周末（或工作日）
     result = get_hot_shop(train,result) # 添加店内热度
-    result = get_user_times(train,result) # 添加用户访问该店次数
+    result = get_shop_times(train,result) # 添加用户访问该店次数
+    result = get_mall_times(train,result) #添加用户访问商场次数
+    result = get_shopmall(result) #访问店次数/访问商场次数
+    result = get_time(result) #时间作为特征rename
+    result = get_wday(result) #是否周末为特征rename
+    result = get_wifi_count(result) #wifi匹配数rename
 
     #特征统计
     final_feat=list(result.columns)

@@ -42,9 +42,9 @@ def get_wifi(train,test,shop_info):
     result = result.groupby('row_id').tail(N)
 
     # 补全用户历史信息
-    result = pd.merge(result, train, on=['user_id', 'shop_id'], how='left')  # 无需去除na
+    # result = pd.merge(result, train, on=['user_id', 'shop_id'], how='left')  # 无需去除na
     # 删去wifi_select
-    result.drop('wifi_select', axis=1, inplace=True)
+    # result.drop('wifi_select', axis=1, inplace=True)
 
     return result
 

@@ -39,13 +39,16 @@ def train_split(train,shop_info):
     return train1,train2
 
 #重命名（为后续样本merge）
-def rename(train1,train,shop_info):
+def rename(train_b,train,shop_info):
     shop_info.rename(columns={'longitude': 'longitude_shop','latitude':'latitude_shop'}, inplace=True)
-    train1.rename(columns={'longitude': 'longitude_train','latitude':'latitude_train','time_stamp':'time_stamp_train',
-                           'wifi_infos':'wifi_infos_train','wday':'wday_train','minutes':'minutes_train'}, inplace=True)
-    train.rename(columns={'longitude': 'longitude_train', 'latitude': 'latitude_train', 'time_stamp': 'time_stamp_train',
+    train_b.rename(columns={'longitude': 'longitude_train', 'latitude': 'latitude_train', 'time_stamp': 'time_stamp_train',
                  'wifi_infos': 'wifi_infos_train','wday':'wday_train','minutes':'minutes_train'}, inplace=True)
-    return train1,train,shop_info
+    train = pd.merge(train, shop_info[['shop_id', 'mall_id']], on='shop_id', how='left')
+    train.rename(columns={'shop_id': 'real_shop_id'}, inplace=True)
+    train.loc[:, 'label'] = 0
+    train.reset_index(inplace=True)
+    train.rename(columns={'index': 'row_id'}, inplace=True)  # 模拟测试集
+    return train_b,train,shop_info
 
 # 设置类标
 def label_set(result):
@@ -59,24 +62,25 @@ if __name__ == "__main__":
 
     print('分离训练，验证集')
     train,validation=train_val_split(train,shop_info)#train用于构造validation的特征
-    train1,train2=train_split(train,shop_info)#train1用于构造train2的特征
+    train_b=train.copy()
+    # train1,train2=train_split(train,shop_info)#train1用于构造train2的特征
 
     #原特征改名
-    train1,train,shop_info=rename(train1,train,shop_info)
+    train_b,shop_info=rename(train_b,train,shop_info)
 
     print('构造训练集')
-    train_result = biuld_set.make(train1, train2, shop_info)
-    train_feat = biuld_feature.feat(train1, train_result)
+    train_result = biuld_set.make(train_b, train, shop_info)
+    train_feat = biuld_feature.feat(train_b, train_result)
     train_feat = label_set(train_feat)
     train_feat.to_csv('data/train_feat.csv')
     print('----------------------------------------------------')
-    del train1, train2, train_result, train_feat
+    del train, train_result, train_feat
     gc.collect()
 
-    # print('构造验证集')
-    # validation_result = biuld_set.make(train, validation, shop_info)
-    # validation_feat = biuld_feature.feat(train,validation_result)
-    # validation_feat=label_set(validation_feat)
-    # validation_feat.to_csv('data/validation_feat.csv')
-    # print('一共用时{}秒'.format(time.time() - t0))
+    print('构造验证集')
+    validation_result = biuld_set.make(train_b, validation, shop_info)
+    validation_feat = biuld_feature.feat(train_b,validation_result)
+    validation_feat=label_set(validation_feat)
+    validation_feat.to_csv('data/validation_feat.csv')
+    print('一共用时{}秒'.format(time.time() - t0))
 
