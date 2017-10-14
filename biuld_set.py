@@ -24,12 +24,38 @@ def get_nearest(train,test,shop_info):
 
     return result
 
+def wifi_select(x):
+    print(x['row_id'])
+    x1=set(list(eval(x['wifi_infos_shop']).keys()))
+    x2=set(list(map(lambda q:q.split('|')[0],x['wifi_infos'].split(';'))))
+    x['wifi_select']=len(x1&x2)
+    return x
+
+#获取wifi数匹配度最高的N个店作为负样本
+def get_wifi(train,test,shop_info):
+    N=10
+    result=pd.merge(test,shop_info,on='mall_id',how='left')
+    result.loc[:,'wifi_select']=0
+    result=result.apply(lambda x:wifi_select(x),axis=1)
+    result=result[(result['wifi_select']>=1)]
+    result.sort_values('wifi_select',inplace=True)
+    result = result.groupby('row_id').tail(N)
+
+    # 补全用户历史信息
+    result = pd.merge(result, train, on=['user_id', 'shop_id'], how='left')  # 无需去除na
+    # 删去wifi_select
+    result.drop('wifi_select', axis=1, inplace=True)
+
+    return result
+
 def make(train, test, shop_info):
     print('构造负类样本...')
-    user_history_shop=get_user_history(train,test,shop_info)
-    nearest_shop=get_nearest(train,test,shop_info)
+    # user_history_shop=get_user_history(train,test,shop_info)
+    # nearest_shop=get_nearest(train,test,shop_info)
+    most_wifi_shop=get_wifi(train,test,shop_info)
     #负类样本汇总
-    result= pd.concat([user_history_shop,nearest_shop])#不去重
+    result=most_wifi_shop
+    # result= pd.concat([user_history_shop,nearest_shop])#不去重
     print('负类样本构造完毕，总数：'+str(result.shape[0]))
 
     #临时统计正确结果的覆盖率

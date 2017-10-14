@@ -7,7 +7,7 @@ import biuld_feature
 
 train_path='data/train_data.csv'
 test_path='data/test_data.csv'
-shop_path='data/训练数据-ccf_first_round_shop_info.csv'
+shop_path='data/shop_info.csv'
 
 def train_val_split(train,shop_info):
     validation = train[(train['time_stamp'] >= '2017-08-25 00:00:00')]

@@ -62,7 +62,7 @@ def wifi_count(shop_info,df_train):
     for k1 in dict_shop:
         for k2 in dict_shop[k1]:
             dict_shop[k1][k2]['ss']/=dict_shop[k1][k2]['num']
-    shop_info.loc[:,'wifi_infos']=0
+    shop_info.loc[:,'wifi_infos_shop']=0
     shop_info=shop_info.apply(lambda x:set_wifi(x,dict_shop),axis=1)
 
     return shop_info
