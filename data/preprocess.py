@@ -23,13 +23,32 @@ def process_time(train):
 
     return train
 
-def set_wifi(x,dict_shop):
-    x[6]=str(dict_shop[x[0]])
+def process_wifi(train):
+    print('处理wifi...')
+    wifi_infos=list(train['wifi_infos'].values)
+    if np.nan in wifi_infos:
+        wifi_infos.remove(np.nan)
+    wifi_dis=[]
+    for w in wifi_infos:
+        w2=w.split(';')
+        wifi_dis_detail={}
+        for wifi_detail in w2:
+            w3=wifi_detail.split('|')
+            wifi_dis_detail[w3[0]]=float(w3[1])
+        wifi_dis.append(wifi_dis_detail)
+    train.loc[:,'wifi_dis']=wifi_dis
+
+    return train
+
+def set_wifi(x,dict_counts_shop,dict_avgdis_shop):
+    x['wifi_counts_shop']=str(dict_counts_shop[x[0]])
+    x['wifi_avgdis_shop']=str(dict_avgdis_shop[x[0]])
     return x
 
 # shop wifi地址统计
 def wifi_count(shop_info,df_train):
-    dict_shop={}
+    dict_counts_shop={}
+    dict_avgdis_shop={}
     limit=-60
     s_in_train=df_train['shop_id'].values
     wifi_in_train=df_train['wifi_infos'].values
@@ -37,8 +56,9 @@ def wifi_count(shop_info,df_train):
         # if i>50000:
         #     break
         print(i)
-        if s not in dict_shop:
-            dict_shop[s]={}
+        if s not in dict_counts_shop:
+            dict_counts_shop[s]={}
+            dict_avgdis_shop[s]={}
         w=wifi_in_train[i].split(';')
         wifi_ssid=[]
         wifi_dis=[]
@@ -52,18 +72,18 @@ def wifi_count(shop_info,df_train):
         wifi_ssid=wifi_ssid[add_index]
         wifi_dis=wifi_dis[add_index]
         for j,wi in enumerate(wifi_ssid):
-            if wi not in dict_shop[s]:
-                dict_shop[s][wi]={}
-                dict_shop[s][wi]['num']=1
-                dict_shop[s][wi]['ss']=wifi_dis[j]
+            if wi not in dict_counts_shop[s]:
+                dict_counts_shop[s][wi]=1
+                dict_avgdis_shop[s][wi]=wifi_dis[j]
             else:
-                dict_shop[s][wi]['num']+=1
-                dict_shop[s][wi]['ss'] += wifi_dis[j]
-    for k1 in dict_shop:
-        for k2 in dict_shop[k1]:
-            dict_shop[k1][k2]['ss']/=dict_shop[k1][k2]['num']
-    shop_info.loc[:,'wifi_infos_shop']=0
-    shop_info=shop_info.apply(lambda x:set_wifi(x,dict_shop),axis=1)
+                dict_counts_shop[s][wi]+=1
+                dict_avgdis_shop[s][wi]+= wifi_dis[j]
+    for k1 in dict_avgdis_shop:
+        for k2 in dict_avgdis_shop[k1]:
+            dict_avgdis_shop[k1][k2]/=dict_counts_shop[k1][k2]
+    shop_info.loc[:,'wifi_counts_shop']=0
+    shop_info.loc[:, 'wifi_avgdis_shop'] = 0
+    shop_info=shop_info.apply(lambda x:set_wifi(x,dict_counts_shop,dict_avgdis_shop),axis=1)
 
     return shop_info
 
@@ -72,14 +92,16 @@ test_path='AB榜测试集-evaluation_public.csv'
 shop_path='训练数据-ccf_first_round_shop_info.csv'
 #时间处理
 df_train=pd.read_csv(train_path)
-# df_train=process_time(df_train)
-# df_train.to_csv('train_data.csv',index=False)
+df_train=process_time(df_train)
+df_train=process_wifi(df_train)
+df_train.to_csv('train_data.csv',index=False)
 
 df_test=pd.read_csv(test_path)
-# df_test=process_time(df_test)
-# df_test.to_csv('test_data.csv',index=False)
+df_test=process_time(df_test)
+df_test=process_wifi(df_test)
+df_test.to_csv('test_data.csv',index=False)
 
 #shop wifi统计
-shop_info=pd.read_csv(shop_path)
-shop_info=wifi_count(shop_info,df_train)
-shop_info.to_csv('shop_info.csv',index=False)
+# shop_info=pd.read_csv(shop_path)
+# shop_info=wifi_count(shop_info,df_train)
+# shop_info.to_csv('shop_info.csv',index=False)

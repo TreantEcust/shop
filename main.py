@@ -42,7 +42,8 @@ def train_split(train,shop_info):
 def rename(train_b,train,shop_info):
     shop_info.rename(columns={'longitude': 'longitude_shop','latitude':'latitude_shop'}, inplace=True)
     train_b.rename(columns={'longitude': 'longitude_train', 'latitude': 'latitude_train', 'time_stamp': 'time_stamp_train',
-                 'wifi_infos': 'wifi_infos_train','wday':'wday_train','minutes':'minutes_train'}, inplace=True)
+                 'wifi_infos': 'wifi_infos_train','wifi_dis':'wifi_dis_train','wday':'wday_train',
+                            'minutes':'minutes_train'}, inplace=True)
     train = pd.merge(train, shop_info[['shop_id', 'mall_id']], on='shop_id', how='left')
     train.rename(columns={'shop_id': 'real_shop_id'}, inplace=True)
     train.loc[:, 'label'] = 0
@@ -66,7 +67,7 @@ if __name__ == "__main__":
     # train1,train2=train_split(train,shop_info)#train1用于构造train2的特征
 
     #原特征改名
-    train_b,shop_info=rename(train_b,train,shop_info)
+    train_b,train,shop_info=rename(train_b,train,shop_info)
 
     print('构造训练集')
     train_result = biuld_set.make(train_b, train, shop_info)
@@ -77,10 +78,10 @@ if __name__ == "__main__":
     del train, train_result, train_feat
     gc.collect()
 
-    print('构造验证集')
-    validation_result = biuld_set.make(train_b, validation, shop_info)
-    validation_feat = biuld_feature.feat(train_b,validation_result)
-    validation_feat=label_set(validation_feat)
-    validation_feat.to_csv('data/validation_feat.csv')
-    print('一共用时{}秒'.format(time.time() - t0))
+    # print('构造验证集')
+    # validation_result = biuld_set.make(train_b, validation, shop_info)
+    # validation_feat = biuld_feature.feat(train_b,validation_result)
+    # validation_feat=label_set(validation_feat)
+    # validation_feat.to_csv('data/validation_feat.csv')
+    # print('一共用时{}秒'.format(time.time() - t0))
 

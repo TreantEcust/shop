@@ -1,4 +1,7 @@
 import pandas as pd
+import numpy as np
+from sklearn.feature_extraction import FeatureHasher
+from scipy.spatial.distance import cdist
 
 #加入用户在train中去过的店铺作为负样本
 def get_user_history(train,test,shop_info):
@@ -32,9 +35,17 @@ def wifi_select(x):
     return x
 
 #获取wifi数匹配度最高的N个店作为负样本
-def get_wifi(train,test,shop_info):
+def get_wifi(test,shop_info):
     N=10
+    wifi_avgdis_shop=np.array(list(map(lambda x:eval(x),shop_info['wifi_avgdis_shop'].values)))
+    wifi_avgdis_test = np.array(list(map(lambda x: eval(x), test['wifi_dis'].values)))
+    FH = FeatureHasher(n_features=1000)
+    wifi_avgdis_shop=FH.transform(wifi_avgdis_shop).toarray()
+    wifi_avgdis_test=FH.transform(wifi_avgdis_test).toarray()
+
     result=pd.merge(test,shop_info,on='mall_id',how='left')
+    X_dis = cdist(wifi_avgdis_test, wifi_avgdis_shop)
+
     result.loc[:,'wifi_select']=0
     result=result.apply(lambda x:wifi_select(x),axis=1)
     result=result[(result['wifi_select']>=1)]
@@ -52,7 +63,7 @@ def make(train, test, shop_info):
     print('构造负类样本...')
     # user_history_shop=get_user_history(train,test,shop_info)
     # nearest_shop=get_nearest(train,test,shop_info)
-    most_wifi_shop=get_wifi(train,test,shop_info)
+    most_wifi_shop=get_wifi(test,shop_info)
     #负类样本汇总
     result=most_wifi_shop
     # result= pd.concat([user_history_shop,nearest_shop])#不去重
