@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 from sklearn.feature_extraction import FeatureHasher
+from tqdm import tqdm
 
 #加入用户在train中去过的店铺作为负样本
 def get_user_history(train,test,shop_info):
@@ -40,8 +41,7 @@ def get_wifi(test,shop_info):
     wifi1 = result['wifi_infos_shop'].values
     wifi2 = result['wifi_dis'].values
     wifi_count=[]
-    for i,w in enumerate(wifi1):
-        print(str(i)+'/'+str(wifi1.shape[0]))
+    for i in tqdm(range(wifi1.shape[0])):
         wifi_count.append(set(eval(wifi1[i]))&set(eval(wifi2[i])))
     result.loc[:,'wifi_select']=wifi_count
     result=result[(result['wifi_select']>=1)]
