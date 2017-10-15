@@ -40,10 +40,12 @@ def train_split(train,shop_info):
 
 #重命名（为后续样本merge）
 def rename(train_b,train,shop_info):
+    train.drop('wifi_infos', axis=1, inplace=True)
+    train_b.drop('wifi_infos', axis=1, inplace=True)
     shop_info.rename(columns={'longitude': 'longitude_shop','latitude':'latitude_shop'}, inplace=True)
-    train_b.rename(columns={'longitude': 'longitude_train', 'latitude': 'latitude_train', 'time_stamp': 'time_stamp_train',
-                 'wifi_infos': 'wifi_infos_train','wifi_dis':'wifi_dis_train','wday':'wday_train',
-                            'minutes':'minutes_train'}, inplace=True)
+    train_b.rename(
+        columns={'longitude': 'longitude_train', 'latitude': 'latitude_train', 'time_stamp': 'time_stamp_train'
+            , 'wifi_dis': 'wifi_dis_train', 'wday': 'wday_train', 'minutes': 'minutes_train'}, inplace=True)
     train = pd.merge(train, shop_info[['shop_id', 'mall_id']], on='shop_id', how='left')
     train.rename(columns={'shop_id': 'real_shop_id'}, inplace=True)
     train.loc[:, 'label'] = 0

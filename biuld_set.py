@@ -1,7 +1,6 @@
 import pandas as pd
 import numpy as np
 from sklearn.feature_extraction import FeatureHasher
-from scipy.spatial.distance import cdist
 
 #加入用户在train中去过的店铺作为负样本
 def get_user_history(train,test,shop_info):
@@ -29,25 +28,22 @@ def get_nearest(train,test,shop_info):
 
 def wifi_select(x):
     print(x['row_id'])
-    x1=set(list(eval(x['wifi_infos_shop']).keys()))
-    x2=set(list(map(lambda q:q.split('|')[0],x['wifi_infos'].split(';'))))
+    x1=set(eval(x['wifi_infos_shop']).keys())
+    x2=set(eval(x['wifi_dis']).keys())
     x['wifi_select']=len(x1&x2)
     return x
 
 #获取wifi数匹配度最高的N个店作为负样本
 def get_wifi(test,shop_info):
     N=10
-    wifi_avgdis_shop=np.array(list(map(lambda x:eval(x),shop_info['wifi_avgdis_shop'].values)))
-    wifi_avgdis_test = np.array(list(map(lambda x: eval(x), test['wifi_dis'].values)))
-    FH = FeatureHasher(n_features=1000)
-    wifi_avgdis_shop=FH.transform(wifi_avgdis_shop).toarray()
-    wifi_avgdis_test=FH.transform(wifi_avgdis_test).toarray()
-
     result=pd.merge(test,shop_info,on='mall_id',how='left')
-    X_dis = cdist(wifi_avgdis_test, wifi_avgdis_shop)
-
-    result.loc[:,'wifi_select']=0
-    result=result.apply(lambda x:wifi_select(x),axis=1)
+    wifi1 = result['wifi_infos_shop'].values
+    wifi2 = result['wifi_dis'].values
+    wifi_count=[]
+    for i,w in enumerate(wifi1):
+        print(str(i)+'/'+str(wifi1.shape[0]))
+        wifi_count.append(set(eval(wifi1[i]))&set(eval(wifi2[i])))
+    result.loc[:,'wifi_select']=wifi_count
     result=result[(result['wifi_select']>=1)]
     result.sort_values('wifi_select',inplace=True)
     result = result.groupby('row_id').tail(N)
