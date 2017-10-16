@@ -47,6 +47,7 @@ def rename(train_b,train,shop_info):
         columns={'longitude': 'longitude_train', 'latitude': 'latitude_train', 'time_stamp': 'time_stamp_train'
             , 'wifi_dis': 'wifi_dis_train', 'wday': 'wday_train', 'minutes': 'minutes_train'}, inplace=True)
     train = pd.merge(train, shop_info[['shop_id', 'mall_id']], on='shop_id', how='left')
+    train_b = pd.merge(train_b, shop_info[['shop_id', 'mall_id']], on='shop_id', how='left')
     train.rename(columns={'shop_id': 'real_shop_id'}, inplace=True)
     train.loc[:, 'label'] = 0
     train.reset_index(inplace=True)
@@ -72,18 +73,18 @@ if __name__ == "__main__":
     train_b,train,shop_info=rename(train_b,train,shop_info)
 
     print('构造训练集')
-    train_result = biuld_set.make(train_b, train, shop_info)
+    train_result = biuld_set.make(train, shop_info)
     train_feat = biuld_feature.feat(train_b, train_result)
     train_feat = label_set(train_feat)
-    train_feat.to_csv('data/train_feat.csv')
+    train_feat.to_csv('data/train_feat.csv',index=False)
     print('----------------------------------------------------')
     del train, train_result, train_feat
     gc.collect()
 
     # print('构造验证集')
-    # validation_result = biuld_set.make(train_b, validation, shop_info)
+    # validation_result = biuld_set.make(validation, shop_info)
     # validation_feat = biuld_feature.feat(train_b,validation_result)
     # validation_feat=label_set(validation_feat)
-    # validation_feat.to_csv('data/validation_feat.csv')
+    # validation_feat.to_csv('data/validation_feat.csv',index=False)
     # print('一共用时{}秒'.format(time.time() - t0))
 

@@ -56,6 +56,7 @@ def get_mall_times(train,result):
 
 def get_shopmall(result):
     result.loc[:,'user_shopmall']=result['user_shop_times']/(result['user_mall_times']+0.0001)
+    return result
 
 def get_time(result):
     result.rename(columns={'time_stamp': 'time_min'}, inplace=True)
@@ -67,6 +68,7 @@ def get_wday(result):
 
 def get_wifi_count(result):
     result.rename(columns={'wifi_select':'wifi_count'},inplace=True)
+    return result
 
 def feat(train,result):
     ori_feat=list(result.columns)

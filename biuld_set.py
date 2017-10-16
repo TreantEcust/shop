@@ -1,6 +1,5 @@
 import pandas as pd
-import numpy as np
-from sklearn.feature_extraction import FeatureHasher
+import multiprocessing
 from tqdm import tqdm
 
 #加入用户在train中去过的店铺作为负样本
@@ -34,15 +33,29 @@ def wifi_select(x):
     x['wifi_select']=len(x1&x2)
     return x
 
+def func(data):
+    wifi1=data[0]
+    wifi2=data[0]
+    wifi_count=[]
+    for i in tqdm(range(wifi1.shape[0])):
+        wifi_count.append(len(set(eval(wifi1[i]))&set(eval(wifi2[i]))))
+    return wifi_count
+
+def start_process():
+    print('Starting',multiprocessing.current_process().name)
+
 #获取wifi数匹配度最高的N个店作为负样本
 def get_wifi(test,shop_info):
     N=10
     result=pd.merge(test,shop_info,on='mall_id',how='left')
+    # result=result.loc[0:83946,:]
     wifi1 = result['wifi_infos_shop'].values
     wifi2 = result['wifi_dis'].values
     wifi_count=[]
     for i in tqdm(range(wifi1.shape[0])):
-        wifi_count.append(set(eval(wifi1[i]))&set(eval(wifi2[i])))
+        wifi_count.append(len(set(eval(wifi1[i]))&set(eval(wifi2[i]))))
+    print(len(wifi_count))
+    print(len(wifi1))
     result.loc[:,'wifi_select']=wifi_count
     result=result[(result['wifi_select']>=1)]
     result.sort_values('wifi_select',inplace=True)
@@ -55,13 +68,15 @@ def get_wifi(test,shop_info):
 
     return result
 
-def make(train, test, shop_info):
+def make(test, shop_info):
     print('构造负类样本...')
+    pd.options.mode.chained_assignment = None  # default='warn'
     # user_history_shop=get_user_history(train,test,shop_info)
     # nearest_shop=get_nearest(train,test,shop_info)
     most_wifi_shop=get_wifi(test,shop_info)
     #负类样本汇总
     result=most_wifi_shop
+    result.sort_values('row_id', inplace=True)
     # result= pd.concat([user_history_shop,nearest_shop])#不去重
     print('负类样本构造完毕，总数：'+str(result.shape[0]))
 
