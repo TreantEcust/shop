@@ -1,5 +1,4 @@
 import pandas as pd
-import multiprocessing
 from tqdm import tqdm
 
 #加入用户在train中去过的店铺作为负样本
@@ -25,24 +24,6 @@ def get_nearest(train,test,shop_info):
     result.drop('shop_dis', axis=1, inplace=True)
 
     return result
-
-def wifi_select(x):
-    print(x['row_id'])
-    x1=set(eval(x['wifi_infos_shop']).keys())
-    x2=set(eval(x['wifi_dis']).keys())
-    x['wifi_select']=len(x1&x2)
-    return x
-
-def func(data):
-    wifi1=data[0]
-    wifi2=data[0]
-    wifi_count=[]
-    for i in tqdm(range(wifi1.shape[0])):
-        wifi_count.append(len(set(eval(wifi1[i]))&set(eval(wifi2[i]))))
-    return wifi_count
-
-def start_process():
-    print('Starting',multiprocessing.current_process().name)
 
 #获取wifi数匹配度最高的N个店作为负样本
 def get_wifi(test,shop_info):
