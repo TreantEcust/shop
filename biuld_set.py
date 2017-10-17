@@ -59,11 +59,11 @@ def make(test, shop_info):
     # result= pd.concat([user_history_shop,nearest_shop])#不去重
     print('负类样本构造完毕，总数：'+str(result.shape[0]))
 
-    # #临时统计正确结果的覆盖率
-    # result.loc[:,'label_temp']=(result['real_shop_id']==result['shop_id']).astype('int')
-    # result_temp=result[(result['label_temp']==1)][['row_id','label_temp']].drop_duplicates()
-    # total_num=result['row_id'].drop_duplicates()
-    # print('正类样本覆盖率：'+str(result_temp.shape[0]/total_num.shape[0]))
-    # result.drop('label_temp', axis=1, inplace=True)
+    #临时统计正确结果的覆盖率
+    result.loc[:,'label_temp']=(result['real_shop_id']==result['shop_id']).astype('int')
+    result_temp=result[(result['label_temp']==1)][['row_id','label_temp']].drop_duplicates()
+    total_num=result['row_id'].drop_duplicates()
+    print('正类样本覆盖率：'+str(result_temp.shape[0]/total_num.shape[0]))
+    result.drop('label_temp', axis=1, inplace=True)
 
     return result

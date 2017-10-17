@@ -1,5 +1,7 @@
 import lightgbm as lgb
 import pandas as pd
+from sklearn.model_selection import ParameterGrid
+
 pd.options.mode.chained_assignment = None
 # 对结果进行评估
 def evaluate(pred):
@@ -8,33 +10,40 @@ def evaluate(pred):
     pred = pred.groupby('row_id').tail(1)
     return pred
 
-train_feat=pd.read_csv('data/train_feat.csv')
-validation_feat=pd.read_csv('data/validation_feat.csv')
-
-predictors = ['dis','dis_shop','time_diff','weekday_diff','hot_point','user_times']
+train_feat=pd.read_csv('data/train_feat3.csv')
+validation_feat=pd.read_csv('data/validation_feat3.csv')
+predictors1 = ['wifi_count','user_shop_times','dis_shop','hot_point']
+predictors2 = ['wifi_count','dis_shop','hot_point']
 params = {
-    'objective': 'binary',
-    'learning_rate':0.2,
-    'feature_fraction': 0.85,
-    'max_depth': 6,
-    'num_leaves':60,
-    'bagging_fraction': 0.85,
-    'bagging_freq':5,
-    'min_data_in_leaf':50,
-    'min_gain_to_split':0,
-    'num_iterations':100,
-    'lambda_l1':1,
-    'lambda_l2':1,
-    'verbose':0,
-    'is_unbalance':True
+    'objective': ['binary'],
+    'learning_rate':[0.2],
+    'feature_fraction': [0.9],
+    'max_depth': [5],
+    'num_leaves':[31],
+    'bagging_fraction': [0.8],
+    'bagging_freq':[5],
+    'min_data_in_leaf':[30],
+    'min_gain_to_split':[0],
+    'num_iterations':[50],
+    'lambda_l1':[1],
+    'lambda_l2':[1],
+    'verbose':[0],
+    'is_unbalance':[True]
 }
-print(params)
-lgbtrain=lgb.Dataset(train_feat[predictors],label=train_feat['label'])
-# model_cv=lgb.cv(params, lgbtrain, num_boost_round=300, nfold=5, metrics='binary_error',verbose_eval=True)
-clf=lgb.train(params,lgbtrain,num_boost_round=100)
-lgbtest = validation_feat[predictors]
-validation_feat.loc[:,'pred'] = clf.predict(lgbtest)
-result = evaluate(validation_feat)
-result.loc[:,'result']=(result['real_shop_id']==result['shop_id']).astype('int')
-result=result['result'].values
-print('acc:'+str(sum(result)/len(result)))
+params=list(ParameterGrid(params))
+lgbtrain1=lgb.Dataset(train_feat[predictors1],label=train_feat['label'],feature_name=predictors1)
+lgbtrain2=lgb.Dataset(train_feat[predictors2],label=train_feat['label'],feature_name=predictors2)
+lgbtest1 = validation_feat[predictors1]
+lgbtest2 = validation_feat[predictors2]
+for param in params:
+    print(param)
+    # model_cv=lgb.cv(param, lgbtrain, num_boost_round=200, nfold=5, metrics='binary_error',verbose_eval=True)
+    # clf = lgb.train(param, lgbtrain1, num_boost_round=param['num_iterations'])
+    # pred1 = clf.predict(lgbtest1)
+    clf = lgb.train(param, lgbtrain2, num_boost_round=param['num_iterations'])
+    pred2 = clf.predict(lgbtest2)
+    validation_feat.loc[:,'pred'] = pred2
+    result = evaluate(validation_feat)
+    result.loc[:,'result']=(result['real_shop_id']==result['shop_id']).astype('int')
+    result=result['result'].values
+    print('acc:'+str(sum(result)/len(result)))

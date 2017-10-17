@@ -59,7 +59,7 @@ def get_shopmall(result):
     return result
 
 def get_time(result):
-    result.rename(columns={'time_stamp': 'time_min'}, inplace=True)
+    result.rename(columns={'minutes': 'time_min'}, inplace=True)
     return result
 
 def get_wday(result):
