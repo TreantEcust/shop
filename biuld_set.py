@@ -29,14 +29,12 @@ def get_nearest(train,test,shop_info):
 def get_wifi(test,shop_info):
     N=10
     result=pd.merge(test,shop_info,on='mall_id',how='left')
-    # result=result.loc[0:83946,:]
+    # result=result.loc[0:43946,:]
     wifi1 = result['wifi_infos_shop'].values
     wifi2 = result['wifi_dis'].values
     wifi_count=[]
     for i in tqdm(range(wifi1.shape[0])):
         wifi_count.append(len(set(eval(wifi1[i]))&set(eval(wifi2[i]))))
-    print(len(wifi_count))
-    print(len(wifi1))
     result.loc[:,'wifi_select']=wifi_count
     result=result[(result['wifi_select']>=1)]
     result.sort_values('wifi_select',inplace=True)
@@ -61,11 +59,11 @@ def make(test, shop_info):
     # result= pd.concat([user_history_shop,nearest_shop])#不去重
     print('负类样本构造完毕，总数：'+str(result.shape[0]))
 
-    #临时统计正确结果的覆盖率
-    result.loc[:,'label_temp']=(result['real_shop_id']==result['shop_id']).astype('int')
-    result_temp=result[(result['label_temp']==1)][['row_id','label_temp']].drop_duplicates()
-    total_num=result['row_id'].drop_duplicates()
-    print('正类样本覆盖率：'+str(result_temp.shape[0]/total_num.shape[0]))
-    result.drop('label_temp', axis=1, inplace=True)
+    # #临时统计正确结果的覆盖率
+    # result.loc[:,'label_temp']=(result['real_shop_id']==result['shop_id']).astype('int')
+    # result_temp=result[(result['label_temp']==1)][['row_id','label_temp']].drop_duplicates()
+    # total_num=result['row_id'].drop_duplicates()
+    # print('正类样本覆盖率：'+str(result_temp.shape[0]/total_num.shape[0]))
+    # result.drop('label_temp', axis=1, inplace=True)
 
     return result
