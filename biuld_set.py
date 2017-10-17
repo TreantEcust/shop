@@ -1,5 +1,6 @@
 import pandas as pd
 from tqdm import tqdm
+from scipy.spatial.distance import jaccard
 
 #加入用户在train中去过的店铺作为负样本
 def get_user_history(train,test,shop_info):
@@ -34,7 +35,7 @@ def get_wifi(test,shop_info):
     wifi2 = result['wifi_dis'].values
     wifi_count=[]
     for i in tqdm(range(wifi1.shape[0])):
-        wifi_count.append(len(set(eval(wifi1[i]))&set(eval(wifi2[i]))))
+        wifi_count.append(jaccard(eval(wifi1[i]),eval(wifi2[i])))
     result.loc[:,'wifi_select']=wifi_count
     result=result[(result['wifi_select']>=1)]
     result.sort_values('wifi_select',inplace=True)
