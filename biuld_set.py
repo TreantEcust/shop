@@ -29,42 +29,49 @@ def get_nearest(train,test,shop_info):
 #获取wifi数匹配度最高的N个店作为负样本
 def get_wifi(test,shop_info):
     N=10
+    wifi_test=test[['row_id','wifi_dis']].values
+    wifi_shop=shop_info[['shop_id','wifi_avgdis_shop']].values
+    wifi_shop_dict={}
+    wifi_test_dict={}
+    for i in tqdm(range(wifi_test.shape[0])):
+        wifi_test_dict[wifi_test[i,0]]=set(eval(wifi_test[i,1]))
+    for i in tqdm(range(wifi_shop.shape[0])):
+        wifi_shop_dict[wifi_shop[i,0]]=set(eval(wifi_shop[i,1]))
     result=pd.merge(test,shop_info,on='mall_id',how='left')
+    result.drop(['wifi_dis', 'wifi_avgdis_shop','wifi_counts_shop'], axis=1, inplace=True)
     # result=result.loc[0:43946,:]
-    wifi1 = result['wifi_infos_shop'].values
-    wifi2 = result['wifi_dis'].values
-    wifi_count=[]
-    for i in tqdm(range(wifi1.shape[0])):
-        wifi_count.append(jaccard(eval(wifi1[i]),eval(wifi2[i])))
-    result.loc[:,'wifi_select']=wifi_count
-    result=result[(result['wifi_select']>=1)]
-    result.sort_values('wifi_select',inplace=True)
+    wifi_inter_count=[]
+    wifi_union_count=[]
+    for i in tqdm(range(result.shape[0])):
+        wifi_inter_count.append \
+            (len(wifi_shop_dict[result.loc[i, 'shop_id']] & wifi_test_dict[result.loc[i, 'row_id']]))
+        wifi_union_count.append \
+            (len(wifi_shop_dict[result.loc[i, 'shop_id']] | wifi_test_dict[result.loc[i, 'row_id']]))
+    result.loc[:, 'wifi_inter_count'] = wifi_inter_count
+    result.loc[:, 'wifi_union_count'] = wifi_union_count
+    result = result[(result['wifi_inter_count'] >= 1)]
+    result.loc[:, 'wifi_jaccard'] = result['wifi_inter_count']/(result['wifi_union_count'])
+    result.sort_values('wifi_inter_count',inplace=True)
     result = result.groupby('row_id').tail(N)
-
-    # 补全用户历史信息
-    # result = pd.merge(result, train, on=['user_id', 'shop_id'], how='left')  # 无需去除na
-    # 删去wifi_select
-    # result.drop('wifi_select', axis=1, inplace=True)
 
     return result
 
-def make(test, shop_info):
+def make(test, shop_info,type=None):
     print('构造负类样本...')
     pd.options.mode.chained_assignment = None  # default='warn'
     # user_history_shop=get_user_history(train,test,shop_info)
     # nearest_shop=get_nearest(train,test,shop_info)
-    most_wifi_shop=get_wifi(test,shop_info)
-    #负类样本汇总
-    result=most_wifi_shop
+    result=get_wifi(test,shop_info)
     result.sort_values('row_id', inplace=True)
     # result= pd.concat([user_history_shop,nearest_shop])#不去重
     print('负类样本构造完毕，总数：'+str(result.shape[0]))
 
-    #临时统计正确结果的覆盖率
-    result.loc[:,'label_temp']=(result['real_shop_id']==result['shop_id']).astype('int')
-    result_temp=result[(result['label_temp']==1)][['row_id','label_temp']].drop_duplicates()
-    total_num=result['row_id'].drop_duplicates()
-    print('正类样本覆盖率：'+str(result_temp.shape[0]/total_num.shape[0]))
-    result.drop('label_temp', axis=1, inplace=True)
+    if type!='test':
+        #临时统计正确结果的覆盖率
+        result.loc[:,'label_temp']=(result['real_shop_id']==result['shop_id']).astype('int')
+        result_temp=result[(result['label_temp']==1)][['row_id','label_temp']].drop_duplicates()
+        total_num=result['row_id'].drop_duplicates()
+        print('正类样本覆盖率：'+str(result_temp.shape[0]/total_num.shape[0]))
+        result.drop('label_temp', axis=1, inplace=True)
 
     return result

@@ -58,29 +58,15 @@ def get_shopmall(result):
     result.loc[:,'user_shopmall']=result['user_shop_times']/(result['user_mall_times']+0.0001)
     return result
 
-def get_time(result):
-    result.rename(columns={'minutes': 'time_min'}, inplace=True)
-    return result
-
-def get_wday(result):
-    result.rename(columns={'wday':'is_wday'},inplace=True)
-    return result
-
-def get_wifi_count(result):
-    result.rename(columns={'wifi_select':'wifi_count'},inplace=True)
-    return result
-
 def feat(train,result):
-    ori_feat=list(result.columns)
+    ori_feat=['row_id','user_id','real_shop_id','longitude','latitude','mall_id','time_stamp',
+              'label','shop_id','category_id','longitude_shop','latitude_shop','price']
     print('开始构造特征...')
     result = get_dis_shop(result)  # 购买和店距离
     result = get_hot_shop(train,result) # 添加店内热度
-    result = get_shop_times(train,result) # 添加用户访问该店次数
-    result = get_mall_times(train,result) #添加用户访问商场次数
-    result = get_shopmall(result) #访问店次数/访问商场次数
-    result = get_time(result) #时间作为特征rename
-    result = get_wday(result) #是否周末为特征rename
-    result = get_wifi_count(result) #wifi匹配数rename
+    # result = get_shop_times(train,result) # 添加用户访问该店次数
+    # result = get_mall_times(train,result) #添加用户访问商场次数
+    # result = get_shopmall(result) #访问店次数/访问商场次数
 
     #特征统计
     final_feat=list(result.columns)

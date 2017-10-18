@@ -40,8 +40,6 @@ def train_split(train,shop_info):
 
 #重命名（为后续样本merge）
 def rename(train_b,train,shop_info):
-    train.drop('wifi_infos', axis=1, inplace=True)
-    train_b.drop('wifi_infos', axis=1, inplace=True)
     shop_info.rename(columns={'longitude': 'longitude_shop','latitude':'latitude_shop'}, inplace=True)
     train_b.rename(
         columns={'longitude': 'longitude_train', 'latitude': 'latitude_train', 'time_stamp': 'time_stamp_train'
@@ -65,6 +63,10 @@ if __name__ == "__main__":
     train = pd.read_csv(train_path)
     shop_info=pd.read_csv(shop_path)
 
+    #delete info
+    train.drop('wifi_infos', axis=1, inplace=True)
+    test.drop('wifi_infos', axis=1, inplace=True)
+
     print('分离训练，验证集')
     train,validation=train_val_split(train,shop_info)#train用于构造validation的特征
     train_b=train.copy()
@@ -81,17 +83,21 @@ if __name__ == "__main__":
     # print('----------------------------------------------------')
     # del train, train_result, train_feat
     # gc.collect()
-
-    # print('构造验证集')
-    # validation_result = biuld_set.make(validation, shop_info)
-    # validation_feat = biuld_feature.feat(train_b,validation_result)
-    # validation_feat=label_set(validation_feat)
-    # validation_feat.to_csv('data/validation_feat.csv',index=False)
     # print('一共用时{}秒'.format(time.time() - t0))
 
+    print('构造验证集')
+    validation_result = biuld_set.make(validation, shop_info)
+    validation_feat = biuld_feature.feat(train_b,validation_result)
+    validation_feat=label_set(validation_feat)
+    validation_feat.to_csv('data/validation_feat.csv',index=False)
+    print('----------------------------------------------------')
+    del validation, validation_result, validation_feat
+    gc.collect()
+
     print('构造test集')
-    test_result = biuld_set.make(test, shop_info)
+    test_result = biuld_set.make(test, shop_info,'test')
     test_feat = biuld_feature.feat(train_b, test_result)
     test_feat.to_csv('data/test_feat.csv', index=False)
+    print('----------------------------------------------------')
     print('一共用时{}秒'.format(time.time() - t0))
 

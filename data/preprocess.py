@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import time
+import tqdm
 
 # 时间处理
 def process_time(train):
@@ -49,7 +50,7 @@ def set_wifi(x,dict_counts_shop,dict_avgdis_shop):
 def wifi_count(shop_info,df_train):
     dict_counts_shop={}
     dict_avgdis_shop={}
-    limit=-60
+    limit=-70
     s_in_train=df_train['shop_id'].values
     wifi_in_train=df_train['wifi_infos'].values
     for i,s in enumerate(s_in_train):
@@ -92,16 +93,16 @@ test_path='AB榜测试集-evaluation_public.csv'
 shop_path='训练数据-ccf_first_round_shop_info.csv'
 #时间处理
 df_train=pd.read_csv(train_path)
-df_train=process_time(df_train)
-df_train=process_wifi(df_train)
-df_train.to_csv('train_data.csv',index=False)
-
-df_test=pd.read_csv(test_path)
-df_test=process_time(df_test)
-df_test=process_wifi(df_test)
-df_test.to_csv('test_data.csv',index=False)
+# df_train=process_time(df_train)
+# df_train=process_wifi(df_train)
+# df_train.to_csv('train_data.csv',index=False)
+#
+# df_test=pd.read_csv(test_path)
+# df_test=process_time(df_test)
+# df_test=process_wifi(df_test)
+# df_test.to_csv('test_data.csv',index=False)
 
 #shop wifi统计
-# shop_info=pd.read_csv(shop_path)
-# shop_info=wifi_count(shop_info,df_train)
-# shop_info.to_csv('shop_info.csv',index=False)
+shop_info=pd.read_csv(shop_path)
+shop_info=wifi_count(shop_info,df_train)
+shop_info.to_csv('shop_info.csv',index=False)

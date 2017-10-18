@@ -1,6 +1,7 @@
 import lightgbm as lgb
 import pandas as pd
 from sklearn.model_selection import ParameterGrid
+import numpy as np
 
 pd.options.mode.chained_assignment = None
 # 对结果进行评估
@@ -41,4 +42,7 @@ for param in params:
     test_feat.loc[:,'pred'] = clf.predict(lgbtest)
     result = evaluate(test_feat)
     result = result[['row_id','shop_id']]
+real_test=pd.read_csv('data/test_data.csv')
+real_test=real_test[['row_id']]
+result=pd.merge(real_test,result,on='row_id',how='left')
 result.to_csv('result.csv',index=False)
