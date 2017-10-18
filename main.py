@@ -75,29 +75,29 @@ if __name__ == "__main__":
     #原特征改名
     train_b,train,shop_info=rename(train_b,train,shop_info)
 
-    # print('构造训练集')
-    # train_result = biuld_set.make(train, shop_info)
-    # train_feat = biuld_feature.feat(train_b, train_result)
-    # train_feat = label_set(train_feat)
-    # train_feat.to_csv('data/train_feat.csv',index=False)
-    # print('----------------------------------------------------')
-    # del train, train_result, train_feat
-    # gc.collect()
-    # print('一共用时{}秒'.format(time.time() - t0))
-
-    print('构造验证集')
-    validation_result = biuld_set.make(validation, shop_info)
-    validation_feat = biuld_feature.feat(train_b,validation_result)
-    validation_feat=label_set(validation_feat)
-    validation_feat.to_csv('data/validation_feat.csv',index=False)
+    print('构造训练集')
+    train_result = biuld_set.make(train, shop_info)
+    train_feat = biuld_feature.feat(train_b, train_result)
+    train_feat = label_set(train_feat)
+    train_feat.to_csv('data/N5data/trainN5_feat.csv',index=False)
     print('----------------------------------------------------')
-    del validation, validation_result, validation_feat
+    del train, train_result, train_feat
     gc.collect()
-
-    print('构造test集')
-    test_result = biuld_set.make(test, shop_info,'test')
-    test_feat = biuld_feature.feat(train_b, test_result)
-    test_feat.to_csv('data/test_feat.csv', index=False)
-    print('----------------------------------------------------')
     print('一共用时{}秒'.format(time.time() - t0))
+
+    # print('构造验证集')
+    # validation_result = biuld_set.make(validation, shop_info)
+    # validation_feat = biuld_feature.feat(train_b,validation_result)
+    # validation_feat=label_set(validation_feat)
+    # validation_feat.to_csv('data/N5data/validationN5_feat.csv',index=False)
+    # print('----------------------------------------------------')
+    # del validation, validation_result, validation_feat
+    # gc.collect()
+    #
+    # print('构造test集')
+    # test_result = biuld_set.make(test, shop_info,'test')
+    # test_feat = biuld_feature.feat(train_b, test_result)
+    # test_feat.to_csv('data/N5data/testN5_feat.csv', index=False)
+    # print('----------------------------------------------------')
+    # print('一共用时{}秒'.format(time.time() - t0))
 

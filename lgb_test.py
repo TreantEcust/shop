@@ -1,7 +1,6 @@
 import lightgbm as lgb
 import pandas as pd
 from sklearn.model_selection import ParameterGrid
-import numpy as np
 
 pd.options.mode.chained_assignment = None
 # 对结果进行评估
@@ -11,19 +10,21 @@ def evaluate(pred):
     pred = pred.groupby('row_id').tail(1)
     return pred
 
-train_feat=pd.read_csv('data/train_feat3.csv')
-validation_feat=pd.read_csv('data/validation_feat3.csv')
-test_feat=pd.read_csv('data/test_feat3.csv')
-predictors = ['wifi_count','dis_shop','hot_point']
+train_feat=pd.read_csv('data/train_feat2.csv')
+validation_feat=pd.read_csv('data/validation_feat2.csv')
+test_feat=pd.read_csv('data/test_feat2.csv')
+predictors = ['wifi_jaccard', 'minutes', 'hot_point', 'wifi_union_count', 'dis_shop',
+               'wifi_inter_count','mapk5','mapk10','large_wifi_sum','large_wifi_num',
+               'less_wifi_sum','less_wifi_num']
 params = {
     'objective': ['binary'],
     'learning_rate':[0.2],
-    'feature_fraction': [0.9],
+    'feature_fraction': [1],
     'max_depth': [5],
-    'num_leaves':[31],
+    'num_leaves':[40],
     'bagging_fraction': [0.8],
     'bagging_freq':[5],
-    'min_data_in_leaf':[30],
+    'min_data_in_leaf':[10],
     'min_gain_to_split':[0],
     'num_iterations':[50],
     'lambda_l1':[1],

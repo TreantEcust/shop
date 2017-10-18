@@ -1,6 +1,5 @@
 import pandas as pd
 from tqdm import tqdm
-from scipy.spatial.distance import jaccard
 
 #加入用户在train中去过的店铺作为负样本
 def get_user_history(train,test,shop_info):
@@ -28,7 +27,7 @@ def get_nearest(train,test,shop_info):
 
 #获取wifi数匹配度最高的N个店作为负样本
 def get_wifi(test,shop_info):
-    N=10
+    N=5
     wifi_test=test[['row_id','wifi_dis']].values
     wifi_shop=shop_info[['shop_id','wifi_avgdis_shop']].values
     wifi_shop_dict={}
@@ -43,10 +42,8 @@ def get_wifi(test,shop_info):
     wifi_inter_count=[]
     wifi_union_count=[]
     for i in tqdm(range(result.shape[0])):
-        wifi_inter_count.append \
-            (len(wifi_shop_dict[result.loc[i, 'shop_id']] & wifi_test_dict[result.loc[i, 'row_id']]))
-        wifi_union_count.append \
-            (len(wifi_shop_dict[result.loc[i, 'shop_id']] | wifi_test_dict[result.loc[i, 'row_id']]))
+        wifi_inter_count.append(len(wifi_shop_dict[result.loc[i, 'shop_id']] & wifi_test_dict[result.loc[i, 'row_id']]))
+        wifi_union_count.append(len(wifi_shop_dict[result.loc[i, 'shop_id']] | wifi_test_dict[result.loc[i, 'row_id']]))
     result.loc[:, 'wifi_inter_count'] = wifi_inter_count
     result.loc[:, 'wifi_union_count'] = wifi_union_count
     result = result[(result['wifi_inter_count'] >= 1)]

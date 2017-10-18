@@ -13,15 +13,17 @@ def evaluate(pred):
     pred = pred.groupby('row_id').tail(1)
     return pred
 
-train_feat=pd.read_csv('data/train_feat.csv')
-validation_feat=pd.read_csv('data/validation_feat.csv')
-predictors1 = ['wday', 'wifi_jaccard', 'minutes', 'hot_point', 'wifi_union_count', 'dis_shop', 'wifi_inter_count']
+train_feat=pd.read_csv('data/train_feat2.csv')
+validation_feat=pd.read_csv('data/validation_feat2.csv')
+predictors = ['wifi_jaccard', 'minutes', 'hot_point', 'wifi_union_count', 'dis_shop',
+               'wifi_inter_count','mapk5','mapk10','large_wifi_sum','large_wifi_num',
+               'less_wifi_sum','less_wifi_num']
 params = {
     'objective': ['binary'],
     'learning_rate':[0.2],
     'feature_fraction': [1],
     'max_depth': [5],
-    'num_leaves':[31],
+    'num_leaves':[40],
     'bagging_fraction': [0.8],
     'bagging_freq':[5],
     'min_data_in_leaf':[10],
@@ -33,8 +35,8 @@ params = {
     'is_unbalance':[True]
 }
 params=list(ParameterGrid(params))
-lgbtrain1=lgb.Dataset(train_feat[predictors1],label=train_feat['label'],feature_name=predictors1)
-lgbtest1 = validation_feat[predictors1]
+lgbtrain1=lgb.Dataset(train_feat[predictors],label=train_feat['label'],feature_name=predictors)
+lgbtest1 = validation_feat[predictors]
 for param in params:
     print(param)
     # model_cv=lgb.cv(param, lgbtrain, num_boost_round=200, nfold=5, metrics='binary_error',verbose_eval=True)
@@ -47,7 +49,7 @@ for param in params:
     print('acc:'+str(sum(result)/len(result)))
     # feature importance
     feature_importance=list(clf.feature_importance())
-    y_pos = np.arange(len(predictors1))
+    y_pos = np.arange(len(predictors))
     plt.barh(y_pos,feature_importance,align = 'center',alpha = 0.2,color='b')
-    plt.yticks(y_pos,predictors1)
+    plt.yticks(y_pos,predictors)
     plt.show()
