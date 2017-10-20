@@ -3,9 +3,9 @@ from matplotlib import pyplot as plt
 import numpy as np
 import time
 
-test_df=pd.read_csv('data/AB榜测试集-evaluation_public.csv')
-shop_df=pd.read_csv('data/训练数据-ccf_first_round_shop_info.csv')
-train_df=pd.read_csv('data/训练数据-ccf_first_round_user_shop_behavior.csv')
+test_df = pd.read_csv('data/AB榜测试集-evaluation_public.csv')
+shop_df = pd.read_csv('data/训练数据-ccf_first_round_shop_info.csv')
+train_df = pd.read_csv('data/训练数据-ccf_first_round_user_shop_behavior.csv')
 
 # #train分布
 # x_train=train_df['longitude'].values
@@ -49,7 +49,5 @@ train_df=pd.read_csv('data/训练数据-ccf_first_round_user_shop_behavior.csv')
 # plt.legend()
 # plt.show()
 
-#统计商城内店的数量
+# 统计商城内店的数量
 # shop_count = shop_df.groupby('mall_id',as_index=False)['shop_id'].agg({'shop_count':'count'})['shop_count'].values
-
-
