@@ -14,13 +14,13 @@ train_feat_path2='data/train_feat2.csv'
 test_feat_path2='data/test_feat2.csv'
 validation_feat_path2='data/validation_feat2.csv'
 
-def nor_process(result,predictors):
-    #candidate
-    cand_num=result.groupby('row_id', as_index=False)['row_id'].agg({'cand_num': 'count'})
-    result=pd.merge(result, cand_num, on='row_id', how='left')
+train_feat_path_nor='data/train_feat_nor.csv'
+test_feat_path_nor='data/test_feat_nor.csv'
+validation_feat_path_nor='data/validation_feat_nor.csv'
 
-    for p in predictors:
-        print(p)
+def nor_process(result,predictors):
+    #归一化
+    for p in tqdm(predictors):
         temp_max = result.groupby('row_id', as_index=False)[p].agg({'max' + p: 'max'})
         temp_min = result.groupby('row_id', as_index=False)[p].agg({'min' + p: 'min'})
         result = pd.merge(result, temp_max, on='row_id', how='left')
@@ -142,7 +142,6 @@ def get_wifi_dict_with_ssid(wifi_trian,wifi_test,wifi_validation,wifi_shop):
 
     return wifi_train_dict, wifi_validation_dict, wifi_test_dict, wifi_shop_dict
 
-
 def get_feature(train,wifi_shop_dict,wifi_train_dict,result):
     # #计算map排名score
     # ids=result[['row_id','shop_id']].values
@@ -179,44 +178,53 @@ def get_feature(train,wifi_shop_dict,wifi_train_dict,result):
 
     return result
 
-df_train=pd.read_csv(train_path)
-df_test=pd.read_csv(test_path)
-df_shop_info=pd.read_csv(shop_path)
-df_train,df_validation=train_val_split(df_train,df_shop_info)
-df_train,df_shop_info=rename(df_train,df_shop_info)
-wifi_trian = df_train[['row_id', 'wifi_dis']].values
-wifi_validation=df_validation[['row_id', 'wifi_dis']].values
-wifi_test=df_test[['row_id','wifi_dis']].values
-wifi_shop = df_shop_info[['shop_id', 'wifi_avgdis_shop']].values
+# df_train=pd.read_csv(train_path)
+# df_test=pd.read_csv(test_path)
+# df_shop_info=pd.read_csv(shop_path)
+# df_train,df_validation=train_val_split(df_train,df_shop_info)
+# df_train,df_shop_info=rename(df_train,df_shop_info)
+# wifi_trian = df_train[['row_id', 'wifi_dis']].values
+# wifi_validation=df_validation[['row_id', 'wifi_dis']].values
+# wifi_test=df_test[['row_id','wifi_dis']].values
+# wifi_shop = df_shop_info[['shop_id', 'wifi_avgdis_shop']].values
 
 # #建立按强度排序的dict
 # wifi_train_dict,wifi_validation_dict,wifi_test_dict,wifi_shop_dict\
 #     =get_wifi_dict_sorted(wifi_trian,wifi_test,wifi_validation,wifi_shop)
 
-#建立保留强度数值的dict
-wifi_train_dict,wifi_validation_dict,wifi_test_dict,wifi_shop_dict\
-    =get_wifi_dict_with_ssid(wifi_trian,wifi_test,wifi_validation,wifi_shop)
+# #建立保留强度数值的dict
+# wifi_train_dict,wifi_validation_dict,wifi_test_dict,wifi_shop_dict\
+#     =get_wifi_dict_with_ssid(wifi_trian,wifi_test,wifi_validation,wifi_shop)
 
 print('train feature:')
 df_train_feat=pd.read_csv(train_feat_path)
-df_train_feat=get_feature(df_train,wifi_shop_dict,wifi_train_dict,df_train_feat)
-df_train_feat.to_csv(train_feat_path2,index=False)
+df_train_feat=nor_process(df_train_feat,['wifi_jaccard', 'hot_point', 'wifi_union_count', 'dis_shop',
+               'wifi_inter_count','mapk5','mapk10','large_wifi_sum','large_wifi_num',
+               'less_wifi_sum','less_wifi_num'])
+# df_train_feat=get_feature(df_train,wifi_shop_dict,wifi_train_dict,df_train_feat)
+df_train_feat.to_csv(train_feat_path_nor,index=False)
 del df_train_feat
 gc.collect()
 print('----------------------------------------------------')
 
 print('validation feature:')
 df_validation_feat=pd.read_csv(validation_feat_path)
-df_validation_feat=get_feature(df_train,wifi_shop_dict,wifi_validation_dict,df_validation_feat)
-df_validation_feat.to_csv(validation_feat_path2,index=False)
+df_validation_feat=nor_process(df_validation_feat,['wifi_jaccard', 'hot_point', 'wifi_union_count', 'dis_shop',
+               'wifi_inter_count','mapk5','mapk10','large_wifi_sum','large_wifi_num',
+               'less_wifi_sum','less_wifi_num'])
+# df_validation_feat=get_feature(df_train,wifi_shop_dict,wifi_validation_dict,df_validation_feat)
+df_validation_feat.to_csv(validation_feat_path_nor,index=False)
 del df_validation_feat
 gc.collect()
 print('----------------------------------------------------')
 
 print('test feature:')
 df_test_feat=pd.read_csv(test_feat_path)
-df_test_feat=get_feature(df_train,wifi_shop_dict,wifi_test_dict,df_test_feat)
-df_test_feat.to_csv(test_feat_path2,index=False)
+df_test_feat=nor_process(df_test_feat,['wifi_jaccard', 'hot_point', 'wifi_union_count', 'dis_shop',
+               'wifi_inter_count','mapk5','mapk10','large_wifi_sum','large_wifi_num',
+               'less_wifi_sum','less_wifi_num'])
+# df_test_feat=get_feature(df_train,wifi_shop_dict,wifi_test_dict,df_test_feat)
+df_test_feat.to_csv(test_feat_path_nor,index=False)
 del df_test_feat
 gc.collect()
 print('----------------------------------------------------')

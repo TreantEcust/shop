@@ -10,31 +10,33 @@ def evaluate(pred):
     pred = pred.groupby('row_id').tail(1)
     return pred
 
-train_feat=pd.read_csv('data/train_feat2.csv')
-validation_feat=pd.read_csv('data/validation_feat2.csv')
-test_feat=pd.read_csv('data/test_feat2.csv')
+train_feat=pd.read_csv('data/train_feat_nor.csv')
+validation_feat=pd.read_csv('data/validation_feat_nor.csv')
+test_feat=pd.read_csv('data/test_feat_nor.csv')
 predictors = ['wifi_jaccard', 'minutes', 'hot_point', 'wifi_union_count', 'dis_shop',
                'wifi_inter_count','mapk5','mapk10','large_wifi_sum','large_wifi_num',
                'less_wifi_sum','less_wifi_num']
 params = {
     'objective': ['binary'],
-    'learning_rate':[0.2],
-    'feature_fraction': [1],
-    'max_depth': [5],
-    'num_leaves':[40],
+    'learning_rate':[0.15],
+    'feature_fraction': [0.8],
+    'max_depth': [12],#12
+    'num_leaves':[120],#120
     'bagging_fraction': [0.8],
     'bagging_freq':[5],
-    'min_data_in_leaf':[10],
+    'min_data_in_leaf':[20],
     'min_gain_to_split':[0],
-    'num_iterations':[50],
+    'num_iterations':[150],
     'lambda_l1':[1],
     'lambda_l2':[1],
     'verbose':[0],
     'is_unbalance':[True]
 }
 params=list(ParameterGrid(params))
-train_data=pd.concat([train_feat[predictors],validation_feat[predictors]])
-train_label=pd.concat([train_feat['label'],validation_feat['label']])
+train_data=train_feat[predictors]
+train_label=train_feat['label']
+# train_data=pd.concat([train_feat[predictors],validation_feat[predictors]])
+# train_label=pd.concat([train_feat['label'],validation_feat['label']])
 lgbtrain=lgb.Dataset(train_data,label=train_label,feature_name=predictors)
 lgbtest = test_feat[predictors]
 for param in params:
