@@ -72,3 +72,4 @@ def make(test, shop_info,type=None):
         result.drop('label_temp', axis=1, inplace=True)
 
     return result
+
