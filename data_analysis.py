@@ -81,7 +81,9 @@ train_df = pd.read_csv('data/训练数据-ccf_first_round_user_shop_behavior.csv
 
 mall_df=shop_df[['shop_id','mall_id']]
 train_df=pd.merge(train_df,mall_df,on='shop_id',how='left')
-mall_count=train_df.groupby('mall_id',as_index=False)['mall_id'].agg({'mall_count':'count'})
+mall_count=train_df.groupby('mall_id',as_index=False)['mall_id'].agg({'mall_count':'count'})#max:m_1175
 countvalues=mall_count['mall_count'].values
-b=1
+plt.hist(x=pd.Series(countvalues).dropna(), bins=50, facecolor='red', label='count')
+plt.legend()
+plt.show()
 
