@@ -5,12 +5,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 train_feat=pd.read_csv('train_feat.csv')
-train_label=train_feat['label'].values
-train_feat.drop('label',inplace=True,axis=1)
+train_label=train_feat.pop('label').values
 
 validation_feat=pd.read_csv('validation_feat.csv')
-validation_label=validation_feat['label'].values
-validation_feat.drop('label',inplace=True,axis=1)
+validation_label=validation_feat.pop('label').values
 feat_names=list(train_feat.columns)
 
 params = {
