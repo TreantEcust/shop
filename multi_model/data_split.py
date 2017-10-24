@@ -71,7 +71,7 @@ for i in tqdm(range(len(mall_list))):
     label_mapping.to_csv(save_path+'/label_mapping.csv',index=False)
 
     # 构造特征
-    # ssid
+    # wifi-ssid
     wifi_train = train_temp['wifi_dis'].values
     wifi_train = list(map(lambda x: eval(x), wifi_train))
     vec = DictVectorizer()
@@ -96,6 +96,7 @@ for i in tqdm(range(len(mall_list))):
     validation_temp = pd.DataFrame(np.concatenate((np.array(validation_temp), np.array(wifi_validation_df)), axis=1),columns=columns_names)
     test_temp = pd.DataFrame(np.concatenate((np.array(test_temp), np.array(wifi_test_df)), axis=1),columns=columns_names_test)
 
+    #wifi-inter
     wifi_train = list(map(lambda x: set(x), wifi_train))
     wifi_validation = list(map(lambda x: set(x), wifi_validation))
     wifi_test = list(map(lambda x: set(x), wifi_test))
