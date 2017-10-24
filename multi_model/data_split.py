@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 from tqdm import tqdm
 import os
+from sklearn.feature_extraction import DictVectorizer
 
 train_path='../data/train_data.csv'
 test_path='../data/test_data.csv'
@@ -70,12 +71,34 @@ for i in tqdm(range(len(mall_list))):
     label_mapping.to_csv(save_path+'/label_mapping.csv',index=False)
 
     # 构造特征
+    # ssid
     wifi_train = train_temp['wifi_dis'].values
-    wifi_train = list(map(lambda x: set(eval(x)), wifi_train))
+    wifi_train = list(map(lambda x: eval(x), wifi_train))
+    vec = DictVectorizer()
+    vec.fit_transform(wifi_train)
+    ssid_names = vec.get_feature_names()
+
+    wifi_train_df = pd.DataFrame(vec.transform(wifi_train).toarray(), columns=ssid_names)
+
     wifi_validation = validation_temp['wifi_dis'].values
-    wifi_validation = list(map(lambda x: set(eval(x)), wifi_validation))
+    wifi_validation = list(map(lambda x: eval(x), wifi_validation))
+    wifi_validation_df = pd.DataFrame(vec.transform(wifi_validation).toarray(), columns=ssid_names)
+
     wifi_test = test_temp['wifi_dis'].values
-    wifi_test = list(map(lambda x: set(eval(x)), wifi_test))
+    wifi_test = list(map(lambda x: eval(x), wifi_test))
+    wifi_test_df = pd.DataFrame(vec.transform(wifi_test).toarray(), columns=ssid_names)
+
+    columns_names = list(train_temp.columns)
+    columns_names.extend(ssid_names)
+    columns_names_test=list(test_temp.columns)
+    columns_names_test.extend(ssid_names)
+    train_temp = pd.DataFrame(np.concatenate((np.array(train_temp), np.array(wifi_train_df)), axis=1),columns=columns_names)
+    validation_temp = pd.DataFrame(np.concatenate((np.array(validation_temp), np.array(wifi_validation_df)), axis=1),columns=columns_names)
+    test_temp = pd.DataFrame(np.concatenate((np.array(test_temp), np.array(wifi_test_df)), axis=1),columns=columns_names_test)
+
+    wifi_train = list(map(lambda x: set(x), wifi_train))
+    wifi_validation = list(map(lambda x: set(x), wifi_validation))
+    wifi_test = list(map(lambda x: set(x), wifi_test))
     wifi_shop = shop_info_temp['wifi_avgdis_shop'].values
     for i in range(len(label_str)):
         w2 = set(eval(wifi_shop[i]))
@@ -95,8 +118,11 @@ for i in tqdm(range(len(mall_list))):
             wifi_inter.append(len(w & w2))
         test_temp.loc[:, 'wifi_' + label_str[i]] = wifi_inter
     feat_columns = ['longitude', 'latitude', 'minutes', 'wday']
+    feat_columns.extend(ssid_names)
     feat_columns.extend(list(map(lambda x: 'wifi_' + x, label_str)))
-    test_temp = test_temp[feat_columns]
+    feat_columns_test=feat_columns.copy()
+    feat_columns_test.append('row_id')
+    test_temp = test_temp[feat_columns_test]
     feat_columns.append('label')
     train_temp = train_temp[feat_columns]
     validation_temp = validation_temp[feat_columns]

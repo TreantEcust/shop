@@ -26,7 +26,7 @@ for i,m in enumerate(mall_list):
         'num_class':[max(train_label)+1],
         'objective': ['multiclass'],
         'learning_rate':[0.15],
-        'feature_fraction': [0.6],
+        'feature_fraction': [0.8],
         'max_depth': [13],
         'num_leaves':[200],
         'bagging_fraction': [0.8],
@@ -51,3 +51,7 @@ for i,m in enumerate(mall_list):
         total_num+=result.shape[0]
         total_true+=len(np.nonzero(result==0)[0])
     print('total acc:'+str(total_true/total_num))
+
+below80_list=['m_6337','m_5529','m_2224','m_4187','m_4079','m_1293','m_4094','m_1377'
+    ,'m_7168','m_2058','m_4011','m_7973','m_2878','m_5825','m_3054','m_3501','m_6803'
+    ,'m_1920','m_3839','m_1263','m_7601','m_6167','m_7800']
