@@ -27,7 +27,7 @@ def get_nearest(train,test,shop_info):
 
 #获取wifi数匹配度最高的N个店作为负样本
 def get_wifi(test,shop_info):
-    N=5
+    N=10
     wifi_test=test[['row_id','wifi_dis']].values
     wifi_shop=shop_info[['shop_id','wifi_avgdis_shop']].values
     wifi_shop_dict={}
@@ -58,6 +58,11 @@ def make(test, shop_info,type=None):
     pd.options.mode.chained_assignment = None  # default='warn'
     # user_history_shop=get_user_history(train,test,shop_info)
     # nearest_shop=get_nearest(train,test,shop_info)
+
+    #ana just
+    test=test[(test['mall_id']=='m_6803')]
+    real_total_num=test.shape[0]
+
     result=get_wifi(test,shop_info)
     result.sort_values('row_id', inplace=True)
     # result= pd.concat([user_history_shop,nearest_shop])#不去重
@@ -68,7 +73,8 @@ def make(test, shop_info,type=None):
         result.loc[:,'label_temp']=(result['real_shop_id']==result['shop_id']).astype('int')
         result_temp=result[(result['label_temp']==1)][['row_id','label_temp']].drop_duplicates()
         total_num=result['row_id'].drop_duplicates()
-        print('正类样本覆盖率：'+str(result_temp.shape[0]/total_num.shape[0]))
+        print('0个滚粗数量:'+str(real_total_num-total_num.shape[0]))
+        print('正类样本覆盖率：'+str(result_temp.shape[0]/real_total_num))
         result.drop('label_temp', axis=1, inplace=True)
 
     return result

@@ -5,6 +5,7 @@ import gc
 import biuld_set
 import biuld_feature
 from tqdm import tqdm
+from sklearn.feature_extraction import DictVectorizer
 
 train_path='../data/train_data.csv'
 test_path='../data/test_data.csv'
@@ -77,10 +78,10 @@ if __name__ == "__main__":
     #原特征改名
     train_b,train,shop_info=rename(train_b,train,shop_info)
 
-    #只选择m_1175的样本
-    train=train[(train['mall_id']=='m_1175')]
-    validation=validation[(validation['mall_id']=='m_1175')]
-    shop_info=shop_info[(shop_info['mall_id']=='m_1175')]
+    #只选择m_7800的样本
+    train=train[(train['mall_id']=='m_7800')]
+    validation=validation[(validation['mall_id']=='m_7800')]
+    shop_info=shop_info[(shop_info['mall_id']=='m_7800')]
 
     #label处理
     label_dict={}
@@ -100,10 +101,27 @@ if __name__ == "__main__":
 
     #构造特征
     #wifi
-    wifi_train=train['wifi_dis'].values
-    wifi_train=list(map(lambda x:set(eval(x)),wifi_train))
-    wifi_validation=validation['wifi_dis'].values
-    wifi_validation=list(map(lambda x:set(eval(x)),wifi_validation))
+    #ssid
+    wifi_train = train['wifi_dis'].values
+    wifi_train = list(map(lambda x: eval(x), wifi_train))
+    vec = DictVectorizer()
+    vec.fit_transform(wifi_train)
+    ssid_names=vec.get_feature_names()
+    wifi_train_df=pd.DataFrame(vec.transform(wifi_train).toarray(),columns=ssid_names)
+
+    wifi_validation = validation['wifi_dis'].values
+    wifi_validation = list(map(lambda x: eval(x), wifi_validation))
+    wifi_validation_df = pd.DataFrame(vec.transform(wifi_validation).toarray(), columns=ssid_names)
+    columns_names=list(train.columns)
+    columns_names.extend(ssid_names)
+    train=pd.DataFrame(np.concatenate((np.array(train),np.array(wifi_train_df)),axis=1),
+                       columns=columns_names)
+    validation = pd.DataFrame(np.concatenate((np.array(validation), np.array(wifi_validation_df)), axis=1),
+                              columns=columns_names)
+
+    #wifi_inter
+    wifi_train=list(map(lambda x:set(x),wifi_train))
+    wifi_validation=list(map(lambda x:set(x),wifi_validation))
     wifi_shop=shop_info['wifi_avgdis_shop'].values
     for i in tqdm(range(len(label_str))):
         #train
@@ -118,6 +136,7 @@ if __name__ == "__main__":
             wifi_inter.append(len(w&w2))
         validation.loc[:,'wifi_'+label_str[i]]=wifi_inter
     feat_columns=['longitude','latitude','minutes','wday']
+    feat_columns.extend(ssid_names)
     feat_columns.extend(list(map(lambda x:'wifi_'+x,label_str)))
     feat_columns.append('label')
     train=train[feat_columns]

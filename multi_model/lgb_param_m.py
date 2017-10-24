@@ -17,7 +17,7 @@ params = {
     'num_class':[max(train_label)+1],
     'objective': ['multiclass'],
     'learning_rate':[0.15],
-    'feature_fraction': [0.6],
+    'feature_fraction': [0.8],
     'max_depth': [13],
     'num_leaves':[200],
     'bagging_fraction': [0.8],

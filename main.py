@@ -84,7 +84,7 @@ if __name__ == "__main__":
     train_result = biuld_set.make(train, shop_info)
     train_feat = biuld_feature.feat(train_b, train_result)
     train_feat = label_set(train_feat)
-    train_feat.to_csv('data/N5data/trainN5_feat.csv',index=False)
+    # train_feat.to_csv('data/N5data/trainN5_feat.csv',index=False)
     print('----------------------------------------------------')
     del train, train_result, train_feat
     gc.collect()

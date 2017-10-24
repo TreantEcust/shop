@@ -2,13 +2,10 @@ import pandas as pd
 import lightgbm as lgb
 from sklearn.model_selection import ParameterGrid
 import numpy as np
-import matplotlib.pyplot as plt
 
 shop_path='../data/shop_info.csv'
 shop_info = pd.read_csv(shop_path)
 mall_list=list(set(shop_info['mall_id'].values))
-total_num = 0
-total_true = 0
 for i,m in enumerate(mall_list):
     save_path='multi_data/'+m
     train_feat=pd.read_csv(save_path+'/train_feat.csv')
@@ -19,6 +16,17 @@ for i,m in enumerate(mall_list):
     validation_label=validation_feat['label'].values
     validation_feat.drop('label',inplace=True,axis=1)
     feat_names=list(train_feat.columns)
+
+    train_label=np.concatenate((train_label,validation_label))
+    train_feat=pd.concat([train_feat,validation_feat],axis=0)
+
+    test_feat = pd.read_csv(save_path + '/test_feat.csv')
+    label_mapping= pd.read_csv(save_path + '/label_mapping.csv')
+    labels=label_mapping['label'].values
+    shops=label_mapping['shop_id'].values
+    map_dict={}
+    for j in range(len(labels)):
+        map_dict[labels[j]]=shops[j]
 
     print('mall_id:'+m+' ('+str(i+1)+'/'+str(len(mall_list))+')')
 
@@ -41,17 +49,15 @@ for i,m in enumerate(mall_list):
     }
     params=list(ParameterGrid(params))
     lgbtrain=lgb.Dataset(train_feat,label=train_label,feature_name=feat_names)
-    lgbtest = validation_feat
+    lgbtest = test_feat[feat_names]
     for param in params:
         clf = lgb.train(param, lgbtrain, num_boost_round=param['num_iterations'])
         pred = clf.predict(lgbtest)
         predict_label=np.argmax(pred,axis=1)
-        result=validation_label-predict_label
-        print('acc:'+str(len(np.nonzero(result==0)[0])/result.shape[0]))
-        total_num+=result.shape[0]
-        total_true+=len(np.nonzero(result==0)[0])
-    print('total acc:'+str(total_true/total_num))
-
-below80_list=['m_6337','m_5529','m_2224','m_4187','m_4079','m_1293','m_4094','m_1377'
-    ,'m_7168','m_2058','m_4011','m_7973','m_2878','m_5825','m_3054','m_3501','m_6803'
-    ,'m_1920','m_3839','m_1263','m_7601','m_6167','m_7800']
+        rows=test_feat['row_id'].values
+        shop_ids=[]
+        for l in predict_label:
+            shop_ids.append(map_dict[l])
+        results = pd.DataFrame([list(rows),list(shop_ids)],index=['row_id', 'shop_ids'])
+        results = results.transpose()
+        results.to_csv(save_path+'/result.csv',index=False)
