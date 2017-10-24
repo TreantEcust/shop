@@ -3,9 +3,9 @@ from matplotlib import pyplot as plt
 import numpy as np
 import time
 
-test_df = pd.read_csv('data/AB榜测试集-evaluation_public.csv')
-shop_df = pd.read_csv('data/训练数据-ccf_first_round_shop_info.csv')
-train_df = pd.read_csv('data/训练数据-ccf_first_round_user_shop_behavior.csv')
+test_df = pd.read_csv('data/test_data.csv')
+shop_df = pd.read_csv('data/shop_info.csv')
+train_df = pd.read_csv('data/train_data.csv')
 
 # #train分布
 # x_train=train_df['longitude'].values
@@ -81,9 +81,20 @@ train_df = pd.read_csv('data/训练数据-ccf_first_round_user_shop_behavior.csv
 
 mall_df=shop_df[['shop_id','mall_id']]
 train_df=pd.merge(train_df,mall_df,on='shop_id',how='left')
-mall_count=train_df.groupby('mall_id',as_index=False)['mall_id'].agg({'mall_count':'count'})#max:m_1175
-countvalues=mall_count['mall_count'].values
-plt.hist(x=pd.Series(countvalues).dropna(), bins=50, facecolor='red', label='count')
-plt.legend()
-plt.show()
+train_df=train_df[(train_df['mall_id']=='m_7800')]
+wifi_dis=train_df['wifi_dis'].values
+wifi_dict={}
+for w in wifi_dis:
+    w1=eval(w)
+    for wt in w1.keys():
+        if wt not in wifi_dict:
+            wifi_dict[wt]=1
+        else:
+            wifi_dict[wt]+=1
+count=0
+for k in wifi_dict:
+    if wifi_dict[k]>=1000:
+        count+=1
+print(count)
+
 
