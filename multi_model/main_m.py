@@ -25,7 +25,6 @@ def train_val_split(train, shop_info):
 
     return train, validation
 
-
 def train_split(train, shop_info):
     np.random.seed(201708)
     # 随机挑选一些index
@@ -43,7 +42,6 @@ def train_split(train, shop_info):
 
     return train1, train2
 
-
 #重命名（为后续样本merge）
 def rename(train_b,train,shop_info):
     shop_info.rename(columns={'longitude': 'longitude_shop','latitude':'latitude_shop'}, inplace=True)
@@ -58,10 +56,53 @@ def rename(train_b,train,shop_info):
     train.rename(columns={'index': 'row_id'}, inplace=True)  # 模拟测试集
     return train_b,train,shop_info
 
-# 设置类标
-def label_set(result):
-    result.loc[:, 'label'] = (result['real_shop_id'] == result['shop_id']).astype('int')
-    return result
+#计算map排序得分
+def apk(actual, predicted, k=10, on_actual=True):
+    """
+    actual : A list of elements that are to be predicted (order doesn't matter)
+    predicted : A list of predicted elements (order does matter)
+    """
+    if len(predicted)>k:
+        predicted = predicted[:k]
+    if on_actual and len(actual)>k:
+        actual = actual[:k]
+
+    score = 0.0
+    num_hits = 0.0
+
+    for i,p in enumerate(predicted):
+        if p in actual and p not in predicted[:i]:
+            num_hits += 1.0
+            score += num_hits / (i+1.0)
+
+    if not actual:
+        return 0.0
+
+    return score / min(len(actual), k)
+
+#wifi排序
+def wifi_sort(wifi_list):
+    for i,w in enumerate(wifi_list):
+        w = sorted(eval(w).items(), key=lambda x: x[1], reverse=True)
+        wifi_list[i] = list(map(lambda x:x[0],w))
+    return wifi_list
+
+#选排名对应的wifi_index
+def choice_index(wifi_train_sorted,wifi_dict,rank=1):
+    rank_index=[]
+    for w in wifi_train_sorted:
+        if rank-1<len(w):
+            rank_index.append(wifi_dict[w[rank-1]])
+        else:
+            rank_index.append(np.nan)
+    return rank_index
+
+#计算map_score
+def map_score(wifi_train_sorted, wifi_shop_sorted, k=10):
+    mscore=[]
+    for w in wifi_train_sorted:
+        mscore.append(apk(wifi_shop_sorted,w,k))
+    return mscore
 
 if __name__ == "__main__":
     t0 = time.time()
@@ -100,8 +141,7 @@ if __name__ == "__main__":
     validation.loc[:,'label'] = labels
 
     #构造特征
-    #wifi
-    #ssid
+    #wifi_ssid
     wifi_train = train['wifi_dis'].values
     wifi_train = list(map(lambda x: eval(x), wifi_train))
     vec = DictVectorizer()
@@ -114,10 +154,8 @@ if __name__ == "__main__":
     wifi_validation_df = pd.DataFrame(vec.transform(wifi_validation).toarray(), columns=ssid_names)
     columns_names=list(train.columns)
     columns_names.extend(ssid_names)
-    train=pd.DataFrame(np.concatenate((np.array(train),np.array(wifi_train_df)),axis=1),
-                       columns=columns_names)
-    validation = pd.DataFrame(np.concatenate((np.array(validation), np.array(wifi_validation_df)), axis=1),
-                              columns=columns_names)
+    train=pd.DataFrame(np.concatenate((np.array(train),np.array(wifi_train_df)),axis=1),columns=columns_names)
+    validation = pd.DataFrame(np.concatenate((np.array(validation), np.array(wifi_validation_df)), axis=1),columns=columns_names)
 
     #wifi_inter
     wifi_train=list(map(lambda x:set(x),wifi_train))
@@ -135,9 +173,44 @@ if __name__ == "__main__":
         for w in wifi_validation:
             wifi_inter.append(len(w&w2))
         validation.loc[:,'wifi_'+label_str[i]]=wifi_inter
+
+    # wifi_index and map
+    wifi_list_all=[]
+    for s in wifi_train:
+        wifi_list_all+=s
+    for s in wifi_validation:
+        wifi_list_all+=s
+    wifi_list_all=list(set(wifi_list_all))
+    wifi_train_index=list(range(len(wifi_list_all)))
+    wifi_dict={}
+    for j,w1 in enumerate(wifi_list_all):
+        wifi_dict[w1]=wifi_train_index[j]
+    #wifi排序
+    wifi_shop_sorted = wifi_sort(shop_info['wifi_avgdis_shop'].values)
+    wifi_train_sorted = wifi_sort(train['wifi_dis'].values)
+    # 列出最强的前3个wifi_index
+    train.loc[:, '1_wifi'] = choice_index(wifi_train_sorted, wifi_dict, 1)
+    train.loc[:, '2_wifi'] = choice_index(wifi_train_sorted, wifi_dict, 2)
+    train.loc[:, '3_wifi'] = choice_index(wifi_train_sorted, wifi_dict, 3)
+
+    wifi_validation_sorted = wifi_sort(validation['wifi_dis'].values)
+    # 列出最强的前3个wifi_index
+    validation.loc[:, '1_wifi'] = choice_index(wifi_validation_sorted, wifi_dict, 1)
+    validation.loc[:, '2_wifi'] = choice_index(wifi_validation_sorted, wifi_dict, 2)
+    validation.loc[:, '3_wifi'] = choice_index(wifi_validation_sorted, wifi_dict, 3)
+
+    # #map得分
+    # for i in tqdm(range(len(label_str))):
+    #     ws=wifi_shop_sorted[i]
+    #     train.loc[:, 'apk10_' + label_str[i]] = map_score(wifi_train_sorted, ws, 10)
+    #     validation.loc[:, 'apk10_' + label_str[i]] = map_score(wifi_validation_sorted, ws, 10)
+
+    # feat_select
     feat_columns=['longitude','latitude','minutes','wday']
-    feat_columns.extend(ssid_names)
+    feat_columns.extend(['1_wifi','2_wifi','3_wifi'])
+    # feat_columns.extend(list(map(lambda x: 'apk10_' + x, label_str)))
     feat_columns.extend(list(map(lambda x:'wifi_'+x,label_str)))
+    feat_columns.extend(ssid_names)
     feat_columns.append('label')
     train=train[feat_columns]
     validation=validation[feat_columns]

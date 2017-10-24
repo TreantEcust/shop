@@ -10,6 +10,7 @@ train_label=train_feat.pop('label').values
 validation_feat=pd.read_csv('validation_feat.csv')
 validation_label=validation_feat.pop('label').values
 feat_names=list(train_feat.columns)
+categorical_feat_names=['1_wifi','2_wifi','3_wifi']
 
 params = {
     'num_class':[max(train_label)+1],
@@ -17,7 +18,7 @@ params = {
     'learning_rate':[0.15],
     'feature_fraction': [0.8],
     'max_depth': [13],
-    'num_leaves':[200],
+    'num_leaves':[200,220,240],
     'bagging_fraction': [0.8],
     'bagging_freq':[5],
     'min_data_in_leaf':[15],
@@ -29,12 +30,12 @@ params = {
     'is_unbalance':[True]
 }
 params=list(ParameterGrid(params))
-lgbtrain=lgb.Dataset(train_feat,label=train_label,feature_name=feat_names)
+lgbtrain=lgb.Dataset(train_feat,label=train_label,feature_name=feat_names,categorical_feature=categorical_feat_names)
 lgbtest = validation_feat
 for param in params:
     print(param)
     # model_cv=lgb.cv(param, lgbtrain, num_boost_round=param['num_iterations'], nfold=5, metrics='multi_error',verbose_eval=True)
-    clf = lgb.train(param, lgbtrain, num_boost_round=param['num_iterations'])
+    clf = lgb.train(param, lgbtrain, num_boost_round=param['num_iterations'],categorical_feature=categorical_feat_names)
     pred = clf.predict(lgbtest)
     predict_label=np.argmax(pred,axis=1)
     result=validation_label-predict_label
