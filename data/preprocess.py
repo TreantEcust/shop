@@ -80,20 +80,15 @@ def wifi_count(shop_info,df_train):
                 dict_counts_shop[s][wi]+=1
                 dict_avgdis_shop[s][wi]+= wifi_dis[j]
 
-    dict_avgdis_shop_backup={}
-    for k1 in dict_avgdis_shop:
-        if k1 not in dict_avgdis_shop_backup:
-            dict_avgdis_shop_backup[k1]={}
-        for k2 in dict_avgdis_shop[k1]:
-            dict_avgdis_shop_backup[k1][k2]=dict_avgdis_shop[k1][k2]
-    for k1 in dict_avgdis_shop_backup.keys():
-        for k2 in dict_avgdis_shop_backup[k1].keys():
-            #如果出现次数==1，去除
-            if dict_counts_shop[k1][k2]==1:
-                dict_counts_shop[k1].pop(k2)
-                dict_avgdis_shop[k1].pop(k2)
-            else:
-                dict_avgdis_shop[k1][k2]/=dict_counts_shop[k1][k2]
+    # dict_avgdis_shop_backup={}
+    # for k1 in dict_avgdis_shop:
+    #     if k1 not in dict_avgdis_shop_backup:
+    #         dict_avgdis_shop_backup[k1]={}
+    #     for k2 in dict_avgdis_shop[k1]:
+    #         dict_avgdis_shop_backup[k1][k2]=dict_avgdis_shop[k1][k2]
+    for k1 in dict_avgdis_shop.keys():
+        for k2 in dict_avgdis_shop[k1].keys():
+            dict_avgdis_shop[k1][k2] /= dict_counts_shop[k1][k2]
     shop_info.loc[:,'wifi_counts_shop']=0
     shop_info.loc[:, 'wifi_avgdis_shop'] = 0
     shop_info=shop_info.apply(lambda x:set_wifi(x,dict_counts_shop,dict_avgdis_shop),axis=1)
