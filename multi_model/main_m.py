@@ -102,6 +102,16 @@ def map_score(wifi_train_sorted, wifi_shop_sorted, k=10):
         mscore.append(apk(wifi_shop_sorted,w,k))
     return mscore
 
+# 计算两点之间距离
+def cal_distance(lat1,lon1,lat2,lon2):
+    dx = np.abs(lon1 - lon2)  # 经度差
+    dy = np.abs(lat1 - lat2)  # 维度差
+    b = (lat1 + lat2) / 2.0
+    Lx = 6371004.0 * (dx / 57.2958) * np.cos(b / 57.2958)
+    Ly = 6371004.0 * (dy / 57.2958)
+    L = (Lx**2 + Ly**2) ** 0.5
+    return L
+
 if __name__ == "__main__":
     t0 = time.time()
     train = pd.read_csv(train_path)
@@ -178,7 +188,25 @@ if __name__ == "__main__":
         validation.loc[:,'wifi_'+label_str[i]]=wifi_inter
         validation.loc[:, 'jac_' + label_str[i]] = np.array(wifi_inter)/np.array(wifi_union)
 
-    # # wifi_map
+    # # 距离差计算
+    # train_lat = train['latitude'].values
+    # train_lon = train['longitude'].values
+    # validation_lat = validation['latitude'].values
+    # validation_lon = validation['longitude'].values
+    # shop_lat = shop_info['latitude_shop'].values
+    # shop_lon = shop_info['longitude_shop'].values
+    # for i in tqdm(range(len(label_str))):
+    #     eud_dis = []
+    #     for j, l in enumerate(train_lat):
+    #         eud_dis.append(cal_distance(train_lat[j], train_lon[j], shop_lat[i], shop_lon[i]))
+    #     train.loc[:, 'eud_dis_' + label_str[i]] = eud_dis
+    #
+    #     eud_dis = []
+    #     for j, l in enumerate(validation_lat):
+    #         eud_dis.append(cal_distance(validation_lat[j], validation_lon[j], shop_lat[i], shop_lon[i]))
+    #     validation.loc[:, 'eud_dis_' + label_str[i]] = eud_dis
+
+    # # wifi_map 不知名随机性
     # #wifi排序
     # wifi_shop_sorted = wifi_sort(shop_info['wifi_avgdis_shop'].values)
     # wifi_train_sorted = wifi_sort(train['wifi_dis'].values)
@@ -193,12 +221,13 @@ if __name__ == "__main__":
     # feat_select
     feat_columns=['longitude','latitude','minutes','wday']
     # feat_columns.extend(list(map(lambda x: 'apk10_' + x, label_str)))
-    feat_columns.extend(list(map(lambda x:'wifi_'+x,label_str)))
-    # feat_columns.extend(list(map(lambda x:'jac_'+x,label_str)))
+    # feat_columns.extend(list(map(lambda x: 'eud_dis_' + x, label_str)))
+    feat_columns.extend(list(map(lambda x: 'wifi_' + x, label_str)))
+    feat_columns.extend(list(map(lambda x: 'jac_' + x, label_str)))
     feat_columns.extend(ssid_names)
     feat_columns.append('label')
     train=train[feat_columns]
     validation=validation[feat_columns]
     train.to_csv('train_feat.csv',index=False)
     validation.to_csv('validation_feat.csv',index=False)
-#acc:0.736712497434845
+#acc:0.7268623024830699

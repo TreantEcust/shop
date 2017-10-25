@@ -77,6 +77,16 @@ def map_score(wifi_train_sorted, wifi_shop_sorted, k=10):
         mscore.append(apk(wifi_shop_sorted,w,k))
     return mscore
 
+# 计算两点之间距离
+def cal_distance(lat1,lon1,lat2,lon2):
+    dx = np.abs(lon1 - lon2)  # 经度差
+    dy = np.abs(lat1 - lat2)  # 维度差
+    b = (lat1 + lat2) / 2.0
+    Lx = 6371004.0 * (dx / 57.2958) * np.cos(b / 57.2958)
+    Ly = 6371004.0 * (dy / 57.2958)
+    L = (Lx**2 + Ly**2) ** 0.5
+    return L
+
 train = pd.read_csv(train_path)
 shop_info = pd.read_csv(shop_path)
 test=pd.read_csv(test_path)
@@ -153,36 +163,59 @@ for i in tqdm(range(len(mall_list))):
         w2 = set(eval(wifi_shop[i]))
         # train
         wifi_inter = []
+        wifi_union=[]
         for w in wifi_train:
             wifi_inter.append(len(w & w2))
+            wifi_union.append(len(w|w2))
         train_temp.loc[:, 'wifi_' + label_str[i]] = wifi_inter
+        train_temp.loc[:, 'jac_'+label_str[i]]=np.array(wifi_inter)/np.array(wifi_union)
         # eval
         wifi_inter = []
+        wifi_union=[]
         for w in wifi_validation:
             wifi_inter.append(len(w & w2))
+            wifi_union.append(len(w | w2))
         validation_temp.loc[:, 'wifi_' + label_str[i]] = wifi_inter
+        validation_temp.loc[:, 'jac_' + label_str[i]] = np.array(wifi_inter) / np.array(wifi_union)
         #test
         wifi_inter = []
+        wifi_union=[]
         for w in wifi_test:
             wifi_inter.append(len(w & w2))
+            wifi_union.append(len(w|w2))
         test_temp.loc[:, 'wifi_' + label_str[i]] = wifi_inter
+        test_temp.loc[:, 'jac_' + label_str[i]] = np.array(wifi_inter) / np.array(wifi_union)
 
-    # wifi_map
-    # wifi排序
-    wifi_shop_sorted = wifi_sort(shop_info_temp['wifi_avgdis_shop'].values)
-    wifi_train_sorted = wifi_sort(train_temp['wifi_dis'].values)
-    wifi_validation_sorted = wifi_sort(validation_temp['wifi_dis'].values)
-    wifi_test_sorted = wifi_sort(test_temp['wifi_dis'].values)
-    # map得分
-    for i in tqdm(range(len(label_str))):
-        ws = wifi_shop_sorted[i]
-        train_temp.loc[:, 'apk10_' + label_str[i]] = map_score(wifi_train_sorted, ws, 10)
-        validation_temp.loc[:, 'apk10_' + label_str[i]] = map_score(wifi_validation_sorted, ws, 10)
-        test_temp.loc[:, 'apk10_' + label_str[i]] = map_score(wifi_test_sorted, ws, 10)
+    # #距离差计算
+    # train_lat=train_temp['latitude'].values
+    # train_lon=train_temp['longitude'].values
+    # validation_lat = validation_temp['latitude'].values
+    # validation_lon = validation_temp['longitude'].values
+    # test_lat = test_temp['latitude'].values
+    # test_lon = test_temp['longitude'].values
+    # shop_lat=shop_info_temp['shop_latitude'].values
+    # shop_lon=shop_info_temp['shop_longitude'].values
+    # for i in range(len(label_str)):
+    #     eud_dis=[]
+    #     for j,l in enumerate(train_lat):
+    #         eud_dis.append(cal_distance(train_lat[j],train_lon[j],shop_lat[i],shop_lon[i]))
+    #     train_temp.loc[:,'eud_dis_'+label_str[i]]=eud_dis
+    #
+    #     eud_dis = []
+    #     for j, l in enumerate(validation_lat):
+    #         eud_dis.append(cal_distance(validation_lat[j], validation_lon[j], shop_lat[i], shop_lon[i]))
+    #     validation_temp.loc[:, 'eud_dis_' + label_str[i]] = eud_dis
+    #
+    #     eud_dis = []
+    #     for j, l in enumerate(test_lat):
+    #         eud_dis.append(cal_distance(test_lat[j], test_lon[j], shop_lat[i], shop_lon[i]))
+    #     test_temp.loc[:, 'eud_dis_' + label_str[i]] = eud_dis
 
     feat_columns = ['longitude', 'latitude', 'minutes', 'wday']
     feat_columns.extend(ssid_names)
+    # feat_columns.extend(list(map(lambda x: 'eud_dis_' + x, label_str)))
     feat_columns.extend(list(map(lambda x: 'wifi_' + x, label_str)))
+    feat_columns.extend(list(map(lambda x: 'jac_' + x, label_str)))
     feat_columns_test=feat_columns.copy()
     feat_columns_test.append('row_id')
     test_temp = test_temp[feat_columns_test]

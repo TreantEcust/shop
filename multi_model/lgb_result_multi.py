@@ -29,7 +29,7 @@ for i,m in enumerate(mall_list):
     print('mall_id:'+m+' ('+str(i+1)+'/'+str(len(mall_list))+')')
 
     params = {
-        'num_class':[max(train_label)+1],
+        'num_class':[max(labels)+1],
         'objective': ['multiclass'],
         'learning_rate':[0.15],
         'feature_fraction': [0.8],
