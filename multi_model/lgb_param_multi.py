@@ -37,7 +37,7 @@ for i,m in enumerate(mall_list):
         'bagging_freq':[5],
         'min_data_in_leaf':[15],
         'min_gain_to_split':[0],
-        'num_iterations':[150],
+        'num_iterations':[400],
         'lambda_l1':[0.01],
         'lambda_l2':[1],
         'verbose':[0],
@@ -47,7 +47,8 @@ for i,m in enumerate(mall_list):
     lgbtrain=lgb.Dataset(train_feat,label=train_label,feature_name=feat_names,categorical_feature=categorical_feat_names)
     lgbtest = validation_feat
     for param in params:
-        clf = lgb.train(param, lgbtrain, num_boost_round=param['num_iterations'],categorical_feature=categorical_feat_names)
+        clf = lgb.train(param, lgbtrain, num_boost_round=param['num_iterations'],early_stopping_rounds=10,
+                        categorical_feature=categorical_feat_names)
         pred = clf.predict(lgbtest)
         predict_label=np.argmax(pred,axis=1)
         result=validation_label-predict_label
@@ -60,3 +61,5 @@ for i,m in enumerate(mall_list):
 result_mall=pd.DataFrame([save_mall_list,save_acc_list],index=['mall_id','accuracy'])
 result_mall=result_mall.transpose()
 result_mall.to_csv('result_mall.csv')
+
+#total acc:0.9048013531968583

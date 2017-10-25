@@ -94,6 +94,8 @@ mall_list=list(set(shop_info['mall_id'].values))
 
 #delete info
 train.drop('wifi_infos', axis=1, inplace=True)
+train=train[(train['longitude']>1)]
+train=train[(train['latitude']>1)]
 train,validation=train_val_split(train,shop_info)#train用于构造validation的特征
 #原特征改名
 train,shop_info=rename(train,shop_info)
@@ -163,33 +165,23 @@ for i in tqdm(range(len(mall_list))):
         w2 = set(eval(wifi_shop[i]))
         # train
         wifi_inter = []
-        wifi_union=[]
         for w in wifi_train:
             wifi_inter.append(len(w & w2))
-            wifi_union.append(len(w|w2))
         train_temp.loc[:, 'wifi_' + label_str[i]] = wifi_inter
-        train_temp.loc[:, 'jac_'+label_str[i]]=np.array(wifi_inter)/np.array(wifi_union)
         # eval
         wifi_inter = []
-        wifi_union=[]
         for w in wifi_validation:
             wifi_inter.append(len(w & w2))
-            wifi_union.append(len(w | w2))
         validation_temp.loc[:, 'wifi_' + label_str[i]] = wifi_inter
-        validation_temp.loc[:, 'jac_' + label_str[i]] = np.array(wifi_inter) / np.array(wifi_union)
         #test
         wifi_inter = []
-        wifi_union=[]
         for w in wifi_test:
             wifi_inter.append(len(w & w2))
-            wifi_union.append(len(w|w2))
         test_temp.loc[:, 'wifi_' + label_str[i]] = wifi_inter
-        test_temp.loc[:, 'jac_' + label_str[i]] = np.array(wifi_inter) / np.array(wifi_union)
 
     feat_columns = ['longitude', 'latitude', 'minutes', 'wday']
     feat_columns.extend(ssid_names)
     feat_columns.extend(list(map(lambda x: 'wifi_' + x, label_str)))
-    feat_columns.extend(list(map(lambda x: 'jac_' + x, label_str)))
     feat_columns_test=feat_columns.copy()
     feat_columns_test.append('row_id')
     test_temp = test_temp[feat_columns_test]

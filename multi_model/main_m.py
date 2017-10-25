@@ -112,6 +112,20 @@ def cal_distance(lat1,lon1,lat2,lon2):
     L = (Lx**2 + Ly**2) ** 0.5
     return L
 
+def get_wifi_large(wifi1,wifi2):
+    sum=0
+    for w in wifi1:
+        if w in wifi2 and wifi1[w]>wifi2[w]:
+            sum+=(wifi1[w]-wifi2[w])
+    return sum
+
+def get_wifi_less(wifi1,wifi2):
+    sum=0
+    for w in wifi1:
+        if w in wifi2 and wifi1[w]<wifi2[w]:
+            sum+=(wifi2[w]-wifi1[w])
+    return sum
+
 if __name__ == "__main__":
     t0 = time.time()
     train = pd.read_csv(train_path)
@@ -119,6 +133,8 @@ if __name__ == "__main__":
 
     #delete info
     train.drop('wifi_infos', axis=1, inplace=True)
+    train=train[(train['longitude']>1)]
+    train=train[(train['latitude']>1)]
     print('分离训练，验证集')
 
     train,validation=train_val_split(train,shop_info)#train用于构造validation的特征
@@ -128,9 +144,9 @@ if __name__ == "__main__":
     train_b,train,shop_info=rename(train_b,train,shop_info)
 
     #只选择m_7800的样本
-    train=train[(train['mall_id']=='m_4341')]#m4341
-    validation=validation[(validation['mall_id']=='m_4341')]
-    shop_info=shop_info[(shop_info['mall_id']=='m_4341')]
+    train=train[(train['mall_id']=='m_7800')]#m4341
+    validation=validation[(validation['mall_id']=='m_7800')]
+    shop_info=shop_info[(shop_info['mall_id']=='m_7800')]
 
     #label处理
     label_dict={}
@@ -165,13 +181,14 @@ if __name__ == "__main__":
     train=pd.DataFrame(np.concatenate((train.values,wifi_train_df.values),axis=1),columns=columns_names)
     validation = pd.DataFrame(np.concatenate((validation.values, wifi_validation_df.values), axis=1),columns=columns_names)
 
-    #wifi_inter#统计强度大的均值
+    #wifi_inter# wifi强度差
     wifi_train=list(map(lambda x:set(x),wifi_train))
     wifi_validation=list(map(lambda x:set(x),wifi_validation))
     wifi_shop=shop_info['wifi_avgdis_shop'].values
     for i in tqdm(range(len(label_str))):
         #train
-        w2=set(eval(wifi_shop[i]))
+        w1=eval(wifi_shop[i])
+        w2=set(w1)
         wifi_inter=[]
         for w in wifi_train:
             wifi_inter.append(len(w&w2))
@@ -192,3 +209,4 @@ if __name__ == "__main__":
     train.to_csv('train_feat.csv',index=False)
     validation.to_csv('validation_feat.csv',index=False)
 #m_4341:acc:0.9083735203857957
+#m_7800:acc:0.7824748614816335

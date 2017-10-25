@@ -12,7 +12,7 @@ validation_label=validation_feat.pop('label').values
 feat_names=list(train_feat.columns)
 categorical_feat_names=['wday']
 
-label_mapping= pd.read_csv('multi_data/m_4341' + '/label_mapping.csv')
+label_mapping= pd.read_csv('multi_data/m_7800' + '/label_mapping.csv')
 labels=label_mapping['label'].values
 shops=label_mapping['shop_id'].values
 
@@ -27,7 +27,7 @@ params = {
     'bagging_freq':[5],
     'min_data_in_leaf':[15],
     'min_gain_to_split':[0],
-    'num_iterations':[150],
+    'num_iterations':[400],
     'lambda_l1':[0.01],
     'lambda_l2':[1],
     'verbose':[0],
@@ -39,7 +39,8 @@ lgbtest = validation_feat
 for param in params:
     print(param)
     # model_cv=lgb.cv(param, lgbtrain, num_boost_round=param['num_iterations'], nfold=5, metrics='multi_error',verbose_eval=True)
-    clf = lgb.train(param, lgbtrain, num_boost_round=param['num_iterations'],categorical_feature=categorical_feat_names)
+    clf = lgb.train(param, lgbtrain, num_boost_round=param['num_iterations'],early_stopping_rounds=10,
+                    categorical_feature=categorical_feat_names)
     pred = clf.predict(lgbtest)
     predict_label=np.argmax(pred,axis=1)
     result=validation_label-predict_label
