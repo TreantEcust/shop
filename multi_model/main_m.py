@@ -128,9 +128,9 @@ if __name__ == "__main__":
     train_b,train,shop_info=rename(train_b,train,shop_info)
 
     #只选择m_7800的样本
-    train=train[(train['mall_id']=='m_7800')]#m4341
-    validation=validation[(validation['mall_id']=='m_7800')]
-    shop_info=shop_info[(shop_info['mall_id']=='m_7800')]
+    train=train[(train['mall_id']=='m_6803')]#m4341
+    validation=validation[(validation['mall_id']=='m_6803')]
+    shop_info=shop_info[(shop_info['mall_id']=='m_6803')]
 
     #label处理
     label_dict={}
