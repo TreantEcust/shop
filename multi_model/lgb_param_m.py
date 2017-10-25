@@ -12,7 +12,7 @@ validation_label=validation_feat.pop('label').values
 feat_names=list(train_feat.columns)
 categorical_feat_names=['wday']
 
-label_mapping= pd.read_csv('multi_data/m_6803' + '/label_mapping.csv')
+label_mapping= pd.read_csv('multi_data/m_4341' + '/label_mapping.csv')
 labels=label_mapping['label'].values
 shops=label_mapping['shop_id'].values
 

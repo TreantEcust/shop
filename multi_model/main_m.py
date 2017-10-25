@@ -128,9 +128,9 @@ if __name__ == "__main__":
     train_b,train,shop_info=rename(train_b,train,shop_info)
 
     #只选择m_7800的样本
-    train=train[(train['mall_id']=='m_6803')]#m4341
-    validation=validation[(validation['mall_id']=='m_6803')]
-    shop_info=shop_info[(shop_info['mall_id']=='m_6803')]
+    train=train[(train['mall_id']=='m_4341')]#m4341
+    validation=validation[(validation['mall_id']=='m_4341')]
+    shop_info=shop_info[(shop_info['mall_id']=='m_4341')]
 
     #label处理
     label_dict={}
@@ -165,7 +165,7 @@ if __name__ == "__main__":
     train=pd.DataFrame(np.concatenate((train.values,wifi_train_df.values),axis=1),columns=columns_names)
     validation = pd.DataFrame(np.concatenate((validation.values, wifi_validation_df.values), axis=1),columns=columns_names)
 
-    #wifi_inter
+    #wifi_inter#统计强度大的均值
     wifi_train=list(map(lambda x:set(x),wifi_train))
     wifi_validation=list(map(lambda x:set(x),wifi_validation))
     wifi_shop=shop_info['wifi_avgdis_shop'].values
@@ -173,61 +173,22 @@ if __name__ == "__main__":
         #train
         w2=set(eval(wifi_shop[i]))
         wifi_inter=[]
-        wifi_union=[]
         for w in wifi_train:
             wifi_inter.append(len(w&w2))
-            wifi_union.append(len(w|w2))
         train.loc[:, 'wifi_' + label_str[i]] = wifi_inter
-        train.loc[:, 'jac_' + label_str[i]] = np.array(wifi_inter)/np.array(wifi_union)
         #eval
         wifi_inter=[]
-        wifi_union = []
         for w in wifi_validation:
             wifi_inter.append(len(w&w2))
-            wifi_union.append(len(w|w2))
         validation.loc[:,'wifi_'+label_str[i]]=wifi_inter
-        validation.loc[:, 'jac_' + label_str[i]] = np.array(wifi_inter)/np.array(wifi_union)
-
-    # # 距离差计算
-    # train_lat = train['latitude'].values
-    # train_lon = train['longitude'].values
-    # validation_lat = validation['latitude'].values
-    # validation_lon = validation['longitude'].values
-    # shop_lat = shop_info['latitude_shop'].values
-    # shop_lon = shop_info['longitude_shop'].values
-    # for i in tqdm(range(len(label_str))):
-    #     eud_dis = []
-    #     for j, l in enumerate(train_lat):
-    #         eud_dis.append(cal_distance(train_lat[j], train_lon[j], shop_lat[i], shop_lon[i]))
-    #     train.loc[:, 'eud_dis_' + label_str[i]] = eud_dis
-    #
-    #     eud_dis = []
-    #     for j, l in enumerate(validation_lat):
-    #         eud_dis.append(cal_distance(validation_lat[j], validation_lon[j], shop_lat[i], shop_lon[i]))
-    #     validation.loc[:, 'eud_dis_' + label_str[i]] = eud_dis
-
-    # # wifi_map 不知名随机性
-    # #wifi排序
-    # wifi_shop_sorted = wifi_sort(shop_info['wifi_avgdis_shop'].values)
-    # wifi_train_sorted = wifi_sort(train['wifi_dis'].values)
-    # wifi_validation_sorted = wifi_sort(validation['wifi_dis'].values)
-    #
-    # #map得分
-    # for i in tqdm(range(len(label_str))):
-    #     ws=wifi_shop_sorted[i]
-    #     train.loc[:, 'apk10_' + label_str[i]] = map_score(wifi_train_sorted, ws, 10)
-    #     validation.loc[:, 'apk10_' + label_str[i]] = map_score(wifi_validation_sorted, ws, 10)
 
     # feat_select
     feat_columns=['longitude','latitude','minutes','wday']
-    # feat_columns.extend(list(map(lambda x: 'apk10_' + x, label_str)))
-    # feat_columns.extend(list(map(lambda x: 'eud_dis_' + x, label_str)))
     feat_columns.extend(list(map(lambda x: 'wifi_' + x, label_str)))
-    feat_columns.extend(list(map(lambda x: 'jac_' + x, label_str)))
     feat_columns.extend(ssid_names)
     feat_columns.append('label')
     train=train[feat_columns]
     validation=validation[feat_columns]
     train.to_csv('train_feat.csv',index=False)
     validation.to_csv('validation_feat.csv',index=False)
-#acc:0.7268623024830699
+#m_4341:acc:0.9083735203857957
