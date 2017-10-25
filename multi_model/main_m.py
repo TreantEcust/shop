@@ -2,8 +2,6 @@ import pandas as pd
 import time
 import numpy as np
 import gc
-import biuld_set
-import biuld_feature
 from tqdm import tqdm
 from sklearn.feature_extraction import DictVectorizer
 
@@ -120,7 +118,7 @@ if __name__ == "__main__":
     train_b,train,shop_info=rename(train_b,train,shop_info)
 
     #只选择m_7800的样本
-    train=train[(train['mall_id']=='m_7800')]
+    train=train[(train['mall_id']=='m_7800')]#m4341
     validation=validation[(validation['mall_id']=='m_7800')]
     shop_info=shop_info[(shop_info['mall_id']=='m_7800')]
 
@@ -154,8 +152,8 @@ if __name__ == "__main__":
     wifi_validation_df = pd.DataFrame(vec.transform(wifi_validation).toarray(), columns=ssid_names)
     columns_names=list(train.columns)
     columns_names.extend(ssid_names)
-    train=pd.DataFrame(np.concatenate((np.array(train),np.array(wifi_train_df)),axis=1),columns=columns_names)
-    validation = pd.DataFrame(np.concatenate((np.array(validation), np.array(wifi_validation_df)), axis=1),columns=columns_names)
+    train=pd.DataFrame(np.concatenate((train.values,wifi_train_df.values),axis=1),columns=columns_names)
+    validation = pd.DataFrame(np.concatenate((validation.values, wifi_validation_df.values), axis=1),columns=columns_names)
 
     #wifi_inter
     wifi_train=list(map(lambda x:set(x),wifi_train))
@@ -165,40 +163,27 @@ if __name__ == "__main__":
         #train
         w2=set(eval(wifi_shop[i]))
         wifi_inter=[]
+        wifi_union=[]
         for w in wifi_train:
             wifi_inter.append(len(w&w2))
-        train.loc[:,'wifi_'+label_str[i]]=wifi_inter
+            wifi_union.append(len(w|w2))
+        train.loc[:, 'wifi_' + label_str[i]] = wifi_inter
+        train.loc[:, 'jac_' + label_str[i]] = np.array(wifi_inter)/np.array(wifi_union)
         #eval
         wifi_inter=[]
+        wifi_union = []
         for w in wifi_validation:
             wifi_inter.append(len(w&w2))
+            wifi_union.append(len(w|w2))
         validation.loc[:,'wifi_'+label_str[i]]=wifi_inter
+        validation.loc[:, 'jac_' + label_str[i]] = np.array(wifi_inter)/np.array(wifi_union)
 
-    # wifi_index and map
-    wifi_list_all=[]
-    for s in wifi_train:
-        wifi_list_all+=s
-    for s in wifi_validation:
-        wifi_list_all+=s
-    wifi_list_all=list(set(wifi_list_all))
-    wifi_train_index=list(range(len(wifi_list_all)))
-    wifi_dict={}
-    for j,w1 in enumerate(wifi_list_all):
-        wifi_dict[w1]=wifi_train_index[j]
-    #wifi排序
-    wifi_shop_sorted = wifi_sort(shop_info['wifi_avgdis_shop'].values)
-    wifi_train_sorted = wifi_sort(train['wifi_dis'].values)
-    # 列出最强的前3个wifi_index
-    train.loc[:, '1_wifi'] = choice_index(wifi_train_sorted, wifi_dict, 1)
-    train.loc[:, '2_wifi'] = choice_index(wifi_train_sorted, wifi_dict, 2)
-    train.loc[:, '3_wifi'] = choice_index(wifi_train_sorted, wifi_dict, 3)
-
-    wifi_validation_sorted = wifi_sort(validation['wifi_dis'].values)
-    # 列出最强的前3个wifi_index
-    validation.loc[:, '1_wifi'] = choice_index(wifi_validation_sorted, wifi_dict, 1)
-    validation.loc[:, '2_wifi'] = choice_index(wifi_validation_sorted, wifi_dict, 2)
-    validation.loc[:, '3_wifi'] = choice_index(wifi_validation_sorted, wifi_dict, 3)
-
+    # # wifi_map
+    # #wifi排序
+    # wifi_shop_sorted = wifi_sort(shop_info['wifi_avgdis_shop'].values)
+    # wifi_train_sorted = wifi_sort(train['wifi_dis'].values)
+    # wifi_validation_sorted = wifi_sort(validation['wifi_dis'].values)
+    #
     # #map得分
     # for i in tqdm(range(len(label_str))):
     #     ws=wifi_shop_sorted[i]
@@ -207,13 +192,13 @@ if __name__ == "__main__":
 
     # feat_select
     feat_columns=['longitude','latitude','minutes','wday']
-    feat_columns.extend(['1_wifi','2_wifi','3_wifi'])
     # feat_columns.extend(list(map(lambda x: 'apk10_' + x, label_str)))
     feat_columns.extend(list(map(lambda x:'wifi_'+x,label_str)))
+    # feat_columns.extend(list(map(lambda x:'jac_'+x,label_str)))
     feat_columns.extend(ssid_names)
     feat_columns.append('label')
     train=train[feat_columns]
     validation=validation[feat_columns]
     train.to_csv('train_feat.csv',index=False)
     validation.to_csv('validation_feat.csv',index=False)
-
+#acc:0.736712497434845

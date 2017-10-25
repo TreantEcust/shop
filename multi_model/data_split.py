@@ -167,41 +167,20 @@ for i in tqdm(range(len(mall_list))):
             wifi_inter.append(len(w & w2))
         test_temp.loc[:, 'wifi_' + label_str[i]] = wifi_inter
 
-    # wifi_index and map
-    wifi_list_all = []
-    for s in wifi_train:
-        wifi_list_all += s
-    for s in wifi_validation:
-        wifi_list_all += s
-    for s in wifi_test:
-        wifi_list_all += s
-    wifi_list_all = list(set(wifi_list_all))
-    wifi_train_index = list(range(len(wifi_list_all)))
-    wifi_dict = {}
-    for j, w1 in enumerate(wifi_list_all):
-        wifi_dict[w1] = wifi_train_index[j]
+    # wifi_map
     # wifi排序
     wifi_shop_sorted = wifi_sort(shop_info_temp['wifi_avgdis_shop'].values)
     wifi_train_sorted = wifi_sort(train_temp['wifi_dis'].values)
-    # 列出最强的前3个wifi_index
-    train_temp.loc[:, '1_wifi'] = choice_index(wifi_train_sorted, wifi_dict, 1)
-    train_temp.loc[:, '2_wifi'] = choice_index(wifi_train_sorted, wifi_dict, 2)
-    train_temp.loc[:, '3_wifi'] = choice_index(wifi_train_sorted, wifi_dict, 3)
-
     wifi_validation_sorted = wifi_sort(validation_temp['wifi_dis'].values)
-    # 列出最强的前3个wifi_index
-    validation_temp.loc[:, '1_wifi'] = choice_index(wifi_validation_sorted, wifi_dict, 1)
-    validation_temp.loc[:, '2_wifi'] = choice_index(wifi_validation_sorted, wifi_dict, 2)
-    validation_temp.loc[:, '3_wifi'] = choice_index(wifi_validation_sorted, wifi_dict, 3)
-
     wifi_test_sorted = wifi_sort(test_temp['wifi_dis'].values)
-    # 列出最强的前3个wifi_index
-    test_temp.loc[:, '1_wifi'] = choice_index(wifi_test_sorted, wifi_dict, 1)
-    test_temp.loc[:, '2_wifi'] = choice_index(wifi_test_sorted, wifi_dict, 2)
-    test_temp.loc[:, '3_wifi'] = choice_index(wifi_test_sorted, wifi_dict, 3)
+    # map得分
+    for i in tqdm(range(len(label_str))):
+        ws = wifi_shop_sorted[i]
+        train_temp.loc[:, 'apk10_' + label_str[i]] = map_score(wifi_train_sorted, ws, 10)
+        validation_temp.loc[:, 'apk10_' + label_str[i]] = map_score(wifi_validation_sorted, ws, 10)
+        test_temp.loc[:, 'apk10_' + label_str[i]] = map_score(wifi_test_sorted, ws, 10)
 
     feat_columns = ['longitude', 'latitude', 'minutes', 'wday']
-    feat_columns.extend(['1_wifi', '2_wifi', '3_wifi'])
     feat_columns.extend(ssid_names)
     feat_columns.extend(list(map(lambda x: 'wifi_' + x, label_str)))
     feat_columns_test=feat_columns.copy()

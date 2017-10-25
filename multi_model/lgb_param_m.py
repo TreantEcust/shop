@@ -10,7 +10,7 @@ train_label=train_feat.pop('label').values
 validation_feat=pd.read_csv('validation_feat.csv')
 validation_label=validation_feat.pop('label').values
 feat_names=list(train_feat.columns)
-categorical_feat_names=['1_wifi','2_wifi','3_wifi']
+categorical_feat_names=['wday']
 
 params = {
     'num_class':[max(train_label)+1],
@@ -18,7 +18,7 @@ params = {
     'learning_rate':[0.15],
     'feature_fraction': [0.8],
     'max_depth': [13],
-    'num_leaves':[200,220,240],
+    'num_leaves':[200],
     'bagging_fraction': [0.8],
     'bagging_freq':[5],
     'min_data_in_leaf':[15],
