@@ -2,13 +2,14 @@ import pandas as pd
 import lightgbm as lgb
 from sklearn.model_selection import ParameterGrid
 import numpy as np
-import matplotlib.pyplot as plt
 
 shop_path='../data/shop_info.csv'
 shop_info = pd.read_csv(shop_path)
 mall_list=list(set(shop_info['mall_id'].values))
 total_num = 0
 total_true = 0
+save_mall_list=[]
+save_acc_list=[]
 for i,m in enumerate(mall_list):
     save_path='multi_data/'+m
     train_feat=pd.read_csv(save_path+'/train_feat.csv')
@@ -49,3 +50,8 @@ for i,m in enumerate(mall_list):
         total_num+=result.shape[0]
         total_true+=len(np.nonzero(result==0)[0])
     print('total acc:'+str(total_true/total_num))
+    save_mall_list.append(m)
+    save_acc_list.append(len(np.nonzero(result==0)[0])/result.shape[0])
+result_mall=pd.DataFrame([save_mall_list,save_acc_list],index=['mall_id','accuracy'])
+result_mall=result_mall.transpose()
+result_mall.to_csv('result_mall.csv')
