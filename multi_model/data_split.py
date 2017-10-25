@@ -150,9 +150,9 @@ for i in tqdm(range(len(mall_list))):
     columns_names.extend(ssid_names)
     columns_names_test=list(test_temp.columns)
     columns_names_test.extend(ssid_names)
-    train_temp = pd.DataFrame(np.concatenate((np.array(train_temp), np.array(wifi_train_df)), axis=1),columns=columns_names)
-    validation_temp = pd.DataFrame(np.concatenate((np.array(validation_temp), np.array(wifi_validation_df)), axis=1),columns=columns_names)
-    test_temp = pd.DataFrame(np.concatenate((np.array(test_temp), np.array(wifi_test_df)), axis=1),columns=columns_names_test)
+    train_temp = pd.DataFrame(np.concatenate((train_temp.values, wifi_train_df.values), axis=1),columns=columns_names)
+    validation_temp = pd.DataFrame(np.concatenate((validation_temp.values, wifi_validation_df.values), axis=1),columns=columns_names)
+    test_temp = pd.DataFrame(np.concatenate((test_temp.values, wifi_test_df.values), axis=1),columns=columns_names_test)
 
     #wifi-inter
     wifi_train = list(map(lambda x: set(x), wifi_train))
@@ -186,34 +186,8 @@ for i in tqdm(range(len(mall_list))):
         test_temp.loc[:, 'wifi_' + label_str[i]] = wifi_inter
         test_temp.loc[:, 'jac_' + label_str[i]] = np.array(wifi_inter) / np.array(wifi_union)
 
-    # #距离差计算
-    # train_lat=train_temp['latitude'].values
-    # train_lon=train_temp['longitude'].values
-    # validation_lat = validation_temp['latitude'].values
-    # validation_lon = validation_temp['longitude'].values
-    # test_lat = test_temp['latitude'].values
-    # test_lon = test_temp['longitude'].values
-    # shop_lat=shop_info_temp['shop_latitude'].values
-    # shop_lon=shop_info_temp['shop_longitude'].values
-    # for i in range(len(label_str)):
-    #     eud_dis=[]
-    #     for j,l in enumerate(train_lat):
-    #         eud_dis.append(cal_distance(train_lat[j],train_lon[j],shop_lat[i],shop_lon[i]))
-    #     train_temp.loc[:,'eud_dis_'+label_str[i]]=eud_dis
-    #
-    #     eud_dis = []
-    #     for j, l in enumerate(validation_lat):
-    #         eud_dis.append(cal_distance(validation_lat[j], validation_lon[j], shop_lat[i], shop_lon[i]))
-    #     validation_temp.loc[:, 'eud_dis_' + label_str[i]] = eud_dis
-    #
-    #     eud_dis = []
-    #     for j, l in enumerate(test_lat):
-    #         eud_dis.append(cal_distance(test_lat[j], test_lon[j], shop_lat[i], shop_lon[i]))
-    #     test_temp.loc[:, 'eud_dis_' + label_str[i]] = eud_dis
-
     feat_columns = ['longitude', 'latitude', 'minutes', 'wday']
     feat_columns.extend(ssid_names)
-    # feat_columns.extend(list(map(lambda x: 'eud_dis_' + x, label_str)))
     feat_columns.extend(list(map(lambda x: 'wifi_' + x, label_str)))
     feat_columns.extend(list(map(lambda x: 'jac_' + x, label_str)))
     feat_columns_test=feat_columns.copy()
