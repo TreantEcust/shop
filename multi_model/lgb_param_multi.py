@@ -18,6 +18,7 @@ for i,m in enumerate(mall_list):
     validation_feat=pd.read_csv(save_path+'/validation_feat.csv')
     validation_label=validation_feat.pop('label').values
     feat_names=list(train_feat.columns)
+    categorical_feat_names = ['wday']
 
     label_mapping = pd.read_csv(save_path + '/label_mapping.csv')
     labels = label_mapping['label'].values
@@ -43,10 +44,10 @@ for i,m in enumerate(mall_list):
         'is_unbalance':[True]
     }
     params=list(ParameterGrid(params))
-    lgbtrain=lgb.Dataset(train_feat,label=train_label,feature_name=feat_names)
+    lgbtrain=lgb.Dataset(train_feat,label=train_label,feature_name=feat_names,categorical_feature=categorical_feat_names)
     lgbtest = validation_feat
     for param in params:
-        clf = lgb.train(param, lgbtrain, num_boost_round=param['num_iterations'])
+        clf = lgb.train(param, lgbtrain, num_boost_round=param['num_iterations'],categorical_feature=categorical_feat_names)
         pred = clf.predict(lgbtest)
         predict_label=np.argmax(pred,axis=1)
         result=validation_label-predict_label
