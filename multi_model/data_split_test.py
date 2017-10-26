@@ -28,7 +28,6 @@ mall_list=list(set(shop_info['mall_id'].values))
 train.drop('wifi_infos', axis=1, inplace=True)
 train=train[(train['longitude']>1)]
 train=train[(train['latitude']>1)]
-train = pd.merge(train, shop_info[['shop_id', 'mall_id']], on='shop_id', how='left')
 #原特征改名
 train,shop_info=rename(train,shop_info)
 
@@ -54,7 +53,7 @@ for i in tqdm(range(len(mall_list))):
     train_temp.loc[:, 'label'] = labels
     label_mapping=pd.DataFrame([list(label_dict.keys()),list(label_dict.values())],index=['shop_id','label'])
     label_mapping=label_mapping.transpose()
-    label_mapping.to_csv(save_path+'/label_mapping.csv',index=False)
+    label_mapping.to_csv(save_path+'/label_mapping_test.csv',index=False)
 
     # 构造特征
     # wifi-ssid
@@ -78,7 +77,6 @@ for i in tqdm(range(len(mall_list))):
 
     feat_columns = ['longitude', 'latitude', 'minutes', 'wday']
     feat_columns.extend(ssid_names)
-    feat_columns.extend(list(map(lambda x: 'wifi_' + x, label_str)))
     feat_columns_test=feat_columns.copy()
     feat_columns_test.append('row_id')
     test_temp = test_temp[feat_columns_test]
