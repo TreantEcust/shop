@@ -12,7 +12,7 @@ validation_label=validation_feat.pop('label').values
 feat_names=list(train_feat.columns)
 categorical_feat_names=['wday']
 
-label_mapping= pd.read_csv('multi_data/m_4341' + '/label_mapping.csv')
+label_mapping= pd.read_csv('multi_data/m_7800' + '/label_mapping.csv')
 labels=label_mapping['label'].values
 shops=label_mapping['shop_id'].values
 
@@ -42,8 +42,7 @@ lgbtest = validation_feat
 for param in params:
     print(param)
     clf = lgb.train(param, lgbtrain, valid_sets=lgbeval, num_boost_round=param['num_iterations'],
-                    early_stopping_rounds=50,
-                    categorical_feature=categorical_feat_names)
+                    early_stopping_rounds=50,categorical_feature=categorical_feat_names)
     print('best interation:'+str(clf.best_iteration))
     pred = clf.predict(lgbtest)
     predict_label=np.argmax(pred,axis=1)

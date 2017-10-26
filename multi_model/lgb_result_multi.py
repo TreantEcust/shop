@@ -12,14 +12,8 @@ for i,m in enumerate(mall_list):
     save_path='multi_data/'+m
     train_feat=pd.read_csv(save_path+'/train_feat.csv')
     train_label=train_feat.pop('label').values
-
-    validation_feat=pd.read_csv(save_path+'/validation_feat.csv')
-    validation_label=validation_feat.pop('label').values
     feat_names=list(train_feat.columns)
     categorical_feat_names = ['wday']
-
-    train_label=np.concatenate((train_label,validation_label))
-    train_feat=pd.concat([train_feat,validation_feat],axis=0)
 
     test_feat = pd.read_csv(save_path + '/test_feat.csv')
     label_mapping= pd.read_csv(save_path + '/label_mapping.csv')
@@ -44,7 +38,7 @@ for i,m in enumerate(mall_list):
         'bagging_freq':[5],
         'min_data_in_leaf':[15],
         'min_gain_to_split':[0],
-        'num_iterations':[best_iterations],
+        'num_iterations':best_iterations,
         'lambda_l1':[0.01],
         'lambda_l2':[1],
         'verbose':[0],

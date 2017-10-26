@@ -181,32 +181,36 @@ if __name__ == "__main__":
     train=pd.DataFrame(np.concatenate((train.values,wifi_train_df.values),axis=1),columns=columns_names)
     validation = pd.DataFrame(np.concatenate((validation.values, wifi_validation_df.values), axis=1),columns=columns_names)
 
-    #wifi_inter# wifi强度差
-    wifi_train=list(map(lambda x:set(x),wifi_train))
-    wifi_validation=list(map(lambda x:set(x),wifi_validation))
-    wifi_shop=shop_info['wifi_avgdis_shop'].values
-    for i in tqdm(range(len(label_str))):
-        #train
-        w1=eval(wifi_shop[i])
-        w2=set(w1)
-        wifi_inter=[]
-        for w in wifi_train:
-            wifi_inter.append(len(w&w2))
-        train.loc[:, 'wifi_' + label_str[i]] = wifi_inter
-        #eval
-        wifi_inter=[]
-        for w in wifi_validation:
-            wifi_inter.append(len(w&w2))
-        validation.loc[:,'wifi_'+label_str[i]]=wifi_inter
+    # #wifi_inter# wifi强度差
+    # wifi_train=list(map(lambda x:set(x),wifi_train))
+    # wifi_validation=list(map(lambda x:set(x),wifi_validation))
+    # wifi_shop=shop_info['wifi_avgdis_shop'].values
+    # for i in tqdm(range(len(label_str))):
+    #     #train
+    #     w1=eval(wifi_shop[i])
+    #     if w1==0:
+    #         train.loc[:, 'wifi_' + label_str[i]] = 0
+    #         validation.loc[:, 'wifi_' + label_str[i]] = 0
+    #         continue
+    #     w2=set(w1)
+    #     wifi_inter=[]
+    #     for w in wifi_train:
+    #         wifi_inter.append(len(w&w2))
+    #     train.loc[:, 'wifi_' + label_str[i]] = wifi_inter
+    #     #eval
+    #     wifi_inter=[]
+    #     for w in wifi_validation:
+    #         wifi_inter.append(len(w&w2))
+    #     validation.loc[:,'wifi_'+label_str[i]]=wifi_inter
 
     # feat_select
     feat_columns=['longitude','latitude','minutes','wday']
-    feat_columns.extend(list(map(lambda x: 'wifi_' + x, label_str)))
+    # feat_columns.extend(list(map(lambda x: 'wifi_' + x, label_str)))
     feat_columns.extend(ssid_names)
     feat_columns.append('label')
     train=train[feat_columns]
     validation=validation[feat_columns]
     train.to_csv('train_feat.csv',index=False)
     validation.to_csv('validation_feat.csv',index=False)
-#m_4341:acc:0.9083735203857957
-#m_7800:acc:0.7824748614816335
+#m_4341:
+#m_7800:

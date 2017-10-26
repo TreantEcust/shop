@@ -13,7 +13,7 @@ save_acc_list=[]
 save_best_iteration=[]
 for i,m in enumerate(mall_list):
     save_path='multi_data/'+m
-    train_feat=pd.read_csv(save_path+'/train_feat.csv')
+    train_feat=pd.read_csv(save_path+'/train_eval_feat.csv')
     train_label=train_feat.pop('label').values
 
     validation_feat=pd.read_csv(save_path+'/validation_feat.csv')
@@ -64,6 +64,7 @@ for i,m in enumerate(mall_list):
     save_best_iteration.append(clf.best_iteration)
     save_mall_list.append(m)
     save_acc_list.append(len(np.nonzero(result==0)[0])/result.shape[0])
+total_acc=round((total_true/total_num)*100,4)
 result_mall=pd.DataFrame([save_mall_list,save_acc_list,save_best_iteration],index=['mall_id','accuracy','best_iteration'])
 result_mall=result_mall.transpose()
-result_mall.to_csv('result_mall.csv')
+result_mall.to_csv('result_'+str(total_acc)+'.csv')
