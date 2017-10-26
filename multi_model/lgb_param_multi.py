@@ -10,7 +10,7 @@ total_true = 0
 save_mall_list=[]
 save_acc_list=[]
 save_best_iteration=[]
-validation_list=['m_7800','m_690','m_7168','m_6637','m_1377']#验证5个
+validation_list=['m_7800','m_690','m_7168','m_6337','m_1377']#验证5个
 for i,m in enumerate(validation_list):
     save_path='multi_data/'+m
     train_feat=pd.read_csv(save_path+'/train_eval_feat.csv')

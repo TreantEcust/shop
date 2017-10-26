@@ -28,7 +28,7 @@ def rename(train,shop_info):
     train.rename(columns={'index': 'row_id'}, inplace=True)  # 模拟测试集
     return train,shop_info
 
-validation_list=['m_7800','m_690','m_7168','m_6637','m_1377']#验证5个
+validation_list=['m_7800','m_690','m_7168','m_6337','m_1377']#验证5个
 train = pd.read_csv(train_path)
 shop_info = pd.read_csv(shop_path)
 
