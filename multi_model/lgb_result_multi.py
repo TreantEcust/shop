@@ -4,7 +4,7 @@ from sklearn.model_selection import ParameterGrid
 import numpy as np
 
 shop_path='../data/shop_info.csv'
-eval_info_path='result_mall.csv'
+eval_info_path='result_89.9099.csv'
 shop_info = pd.read_csv(shop_path)
 mall_list=list(set(shop_info['mall_id'].values))
 eval_info=pd.read_csv(eval_info_path)
@@ -24,7 +24,8 @@ for i,m in enumerate(mall_list):
         map_dict[labels[j]]=shops[j]
 
     print('mall_id:'+m+' ('+str(i+1)+'/'+str(len(mall_list))+')')
-    best_iterations=eval_info[(eval_info['mall_id']==m)]['best_iteration'].values
+    best_iterations=eval_info[(eval_info['mall_id']==m)]['best_iteration'].values[0]
+    best_iterations=(int(best_iterations/50)+1)*50
 
     params = {
         'num_class':[max(labels)+1],
@@ -38,7 +39,7 @@ for i,m in enumerate(mall_list):
         'bagging_freq':[5],
         'min_data_in_leaf':[15],
         'min_gain_to_split':[0],
-        'num_iterations':best_iterations,
+        'num_iterations':[best_iterations],
         'lambda_l1':[0.01],
         'lambda_l2':[1],
         'verbose':[0],
