@@ -11,9 +11,9 @@ shop_path='../data/shop_info.csv'
 
 
 def train_val_split(train, shop_info):
-    validation = train[(train['time_stamp'] >= '2017-08-25 00:00:00')]
+    validation = train[(train['time_stamp'] >= '2017-08-28 00:00:00')]
     # validation.reset_index(inplace=True)
-    train = train[(train['time_stamp'] < '2017-08-25 00:00:00')]
+    train = train[(train['time_stamp'] < '2017-08-28 00:00:00')]
     # train.reset_index(inplace=True)
     validation = pd.merge(validation, shop_info[['shop_id', 'mall_id']], on='shop_id', how='left')
     validation.rename(columns={'shop_id': 'real_shop_id'}, inplace=True)
@@ -144,9 +144,9 @@ if __name__ == "__main__":
     train_b,train,shop_info=rename(train_b,train,shop_info)
 
     #只选择m_7800的样本
-    train=train[(train['mall_id']=='m_7800')]#m4341
-    validation=validation[(validation['mall_id']=='m_7800')]
-    shop_info=shop_info[(shop_info['mall_id']=='m_7800')]
+    train=train[(train['mall_id']=='m_7168')]
+    validation=validation[(validation['mall_id']=='m_7168')]
+    shop_info=shop_info[(shop_info['mall_id']=='m_7168')]
 
     #label处理
     label_dict={}
@@ -181,36 +181,35 @@ if __name__ == "__main__":
     train=pd.DataFrame(np.concatenate((train.values,wifi_train_df.values),axis=1),columns=columns_names)
     validation = pd.DataFrame(np.concatenate((validation.values, wifi_validation_df.values), axis=1),columns=columns_names)
 
-    # #wifi_inter# wifi强度差
-    # wifi_train=list(map(lambda x:set(x),wifi_train))
-    # wifi_validation=list(map(lambda x:set(x),wifi_validation))
-    # wifi_shop=shop_info['wifi_avgdis_shop'].values
-    # for i in tqdm(range(len(label_str))):
-    #     #train
-    #     w1=eval(wifi_shop[i])
-    #     if w1==0:
-    #         train.loc[:, 'wifi_' + label_str[i]] = 0
-    #         validation.loc[:, 'wifi_' + label_str[i]] = 0
-    #         continue
-    #     w2=set(w1)
-    #     wifi_inter=[]
-    #     for w in wifi_train:
-    #         wifi_inter.append(len(w&w2))
-    #     train.loc[:, 'wifi_' + label_str[i]] = wifi_inter
-    #     #eval
-    #     wifi_inter=[]
-    #     for w in wifi_validation:
-    #         wifi_inter.append(len(w&w2))
-    #     validation.loc[:,'wifi_'+label_str[i]]=wifi_inter
+    #wifi_inter# wifi强度差
+    wifi_train=list(map(lambda x:set(x),wifi_train))
+    wifi_validation=list(map(lambda x:set(x),wifi_validation))
+    wifi_shop=shop_info['wifi_avgdis_shop'].values
+    for i in tqdm(range(len(label_str))):
+        #train
+        w1=eval(wifi_shop[i])
+        if w1==0:
+            train.loc[:, 'wifi_' + label_str[i]] = 0
+            validation.loc[:, 'wifi_' + label_str[i]] = 0
+            continue
+        w2=set(w1)
+        wifi_inter=[]
+        for w in wifi_train:
+            wifi_inter.append(len(w&w2))
+        train.loc[:, 'wifi_' + label_str[i]] = wifi_inter
+        #eval
+        wifi_inter=[]
+        for w in wifi_validation:
+            wifi_inter.append(len(w&w2))
+        validation.loc[:,'wifi_'+label_str[i]]=wifi_inter
 
     # feat_select
     feat_columns=['longitude','latitude','minutes','wday']
-    # feat_columns.extend(list(map(lambda x: 'wifi_' + x, label_str)))
+    feat_columns.extend(list(map(lambda x: 'wifi_' + x, label_str)))
     feat_columns.extend(ssid_names)
     feat_columns.append('label')
     train=train[feat_columns]
     validation=validation[feat_columns]
     train.to_csv('train_feat.csv',index=False)
     validation.to_csv('validation_feat.csv',index=False)
-#m_4341:
-#m_7800:
+#m7168:0.7179861364465524

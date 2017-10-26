@@ -42,8 +42,12 @@ def process_wifi(train):
     return train
 
 def set_wifi(x,dict_counts_shop,dict_avgdis_shop):
-    x['wifi_counts_shop']=str(dict_counts_shop[x[0]])
-    x['wifi_avgdis_shop']=str(dict_avgdis_shop[x[0]])
+    if x[0] in dict_avgdis_shop:
+        x['wifi_counts_shop']=str(dict_counts_shop[x[0]])
+        x['wifi_avgdis_shop']=str(dict_avgdis_shop[x[0]])
+    else:
+        x['wifi_counts_shop']='{}'
+        x['wifi_counts_shop']='{}'
     return x
 
 # shop wifi地址统计 去除次数等于1的
@@ -111,5 +115,5 @@ df_train=pd.read_csv(train_path)
 
 #shop wifi统计
 shop_info=pd.read_csv(shop_path)
-shop_info=wifi_count(shop_info,df_train)
+shop_info=wifi_count(shop_info,df_train[(df_train['time_stamp'] < '2017-08-28 00:00:00')])
 shop_info.to_csv('shop_info.csv',index=False)

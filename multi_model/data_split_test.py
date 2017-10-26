@@ -53,7 +53,7 @@ for i in tqdm(range(len(mall_list))):
     train_temp.loc[:, 'label'] = labels
     label_mapping=pd.DataFrame([list(label_dict.keys()),list(label_dict.values())],index=['shop_id','label'])
     label_mapping=label_mapping.transpose()
-    label_mapping.to_csv(save_path+'/label_mapping_test.csv',index=False)
+    label_mapping.to_csv(save_path+'/label_mapping.csv',index=False)
 
     # 构造特征
     # wifi-ssid
