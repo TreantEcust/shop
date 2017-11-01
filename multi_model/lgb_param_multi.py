@@ -5,13 +5,13 @@ import numpy as np
 
 shop_path='../data/shop_info.csv'
 shop_info = pd.read_csv(shop_path)
-mall_list=list(set(shop_info['mall_id'].values))
 total_num = 0
 total_true = 0
 save_mall_list=[]
 save_acc_list=[]
 save_best_iteration=[]
-for i,m in enumerate(mall_list):
+validation_list=['m_7800','m_690','m_7168','m_6337','m_1377']#验证5个
+for i,m in enumerate(validation_list):
     save_path='multi_data/'+m
     train_feat=pd.read_csv(save_path+'/train_eval_feat.csv')
     train_label=train_feat.pop('label').values
@@ -25,7 +25,7 @@ for i,m in enumerate(mall_list):
     labels = label_mapping['label'].values
     shops = label_mapping['shop_id'].values
 
-    print('mall_id:'+m+' ('+str(i+1)+'/'+str(len(mall_list))+')')
+    print('mall_id:'+m+' ('+str(i+1)+'/'+str(len(validation_list))+')')
 
     params = {
         'num_class':[max(labels)+1],
@@ -67,4 +67,4 @@ for i,m in enumerate(mall_list):
 total_acc=round((total_true/total_num)*100,4)
 result_mall=pd.DataFrame([save_mall_list,save_acc_list,save_best_iteration],index=['mall_id','accuracy','best_iteration'])
 result_mall=result_mall.transpose()
-result_mall.to_csv('result_'+str(total_acc)+'.csv')
+result_mall.to_csv('eval_'+str(total_acc)+'.csv')

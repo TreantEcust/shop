@@ -8,8 +8,8 @@ train_path='../data/train_data.csv'
 shop_path='../data/shop_info.csv'
 pd.options.mode.chained_assignment = None  # default='warn'
 def train_val_split(train, shop_info):
-    validation = train[(train['time_stamp'] >= '2017-08-25 00:00:00')]
-    train = train[(train['time_stamp'] < '2017-08-25 00:00:00')]
+    validation = train[(train['time_stamp'] >= '2017-08-28 00:00:00')]
+    train = train[(train['time_stamp'] < '2017-08-28 00:00:00')]
     validation = pd.merge(validation, shop_info[['shop_id', 'mall_id']], on='shop_id', how='left')
     validation.rename(columns={'shop_id': 'real_shop_id'}, inplace=True)
     validation.loc[:, 'label'] = 0
@@ -28,9 +28,9 @@ def rename(train,shop_info):
     train.rename(columns={'index': 'row_id'}, inplace=True)  # 模拟测试集
     return train,shop_info
 
+validation_list=['m_7800','m_690','m_7168','m_6337','m_1377']#验证5个
 train = pd.read_csv(train_path)
 shop_info = pd.read_csv(shop_path)
-mall_list=list(set(shop_info['mall_id'].values))
 
 #delete info
 train.drop('wifi_infos', axis=1, inplace=True)
@@ -40,8 +40,8 @@ train,validation=train_val_split(train,shop_info)#train用于构造validation的
 #原特征改名
 train,shop_info=rename(train,shop_info)
 
-for i in tqdm(range(len(mall_list))):
-    mall_id=mall_list[i]
+for i in tqdm(range(len(validation_list))):
+    mall_id=validation_list[i]
     save_path='multi_data/'+mall_id
     if not os.path.exists(save_path):
         os.mkdir(save_path)
