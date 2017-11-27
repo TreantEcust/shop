@@ -5,6 +5,7 @@ import ch.hsr.geohash.GeoHash;
 
 /**
  * Created by wangdexun on 2017/11/24.
+ * 经纬度转geohash
  */
 public class LonLatGeohashUDF extends BaseUDF {
     public String evaluate(String lat, String lon, String precision) {

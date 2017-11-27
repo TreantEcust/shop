@@ -2,7 +2,7 @@ package Utils;
 
 /**
  * Created by wangdexun on 2017/11/25.
- * 处理缺失值
+ * 处理（Wi-Fi）缺失值
  */
 public class Imputer {
 
