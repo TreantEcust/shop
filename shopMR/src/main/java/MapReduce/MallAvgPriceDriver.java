@@ -1,3 +1,5 @@
+package MapReduce;
+
 import com.aliyun.odps.OdpsException;
 import com.aliyun.odps.data.TableInfo;
 import com.aliyun.odps.mapred.JobClient;
@@ -12,7 +14,7 @@ import java.io.IOException;
 
 /**
  * Created by wangdexun on 2017/11/23.
- * 统计每个mall的平均price
+ * 统计每个mall的平均price（目前没用）
  */
 public class MallAvgPriceDriver {
 

@@ -1,3 +1,7 @@
+package MapReduce;
+
+import Utils.Serializer;
+import Utils.Sorted;
 import com.aliyun.odps.data.Record;
 import com.aliyun.odps.mapred.ReducerBase;
 
@@ -6,7 +10,7 @@ import java.util.*;
 
 /**
  * Created by wangdexun on 2017/11/23.
- * 将每个shop的wifi记录整合，相同id求均值，再按照强度降序(没法用= =)
+ * 将每个shop的wifi记录整合，相同id求均值，再按照强度降序
  */
 public class ShopWifiAggReducer extends ReducerBase {
 
@@ -37,23 +41,25 @@ public class ShopWifiAggReducer extends ReducerBase {
             }
         }
         // 求均值or最大值
+        // TODO Wi-Fi筛选策略
         Map<String, Double> strengthAvg = new HashMap<String, Double>();
         for (String id : wifiCount.keySet()) {
-            strengthAvg.put(id, (double) (strengthSum.get(id) / wifiCount.get(id)));
+            if (wifiCount.get(id) >= 20) // 筛选
+                strengthAvg.put(id, (double) (strengthSum.get(id) / wifiCount.get(id)));
         }
-        // 排序
-        List<Map.Entry<String, Double>> wifiList = new ArrayList<Map.Entry<String, Double>>(strengthAvg.entrySet());
-        Collections.sort(wifiList, new Comparator<Map.Entry<String, Double>>() {
-            public int compare(Map.Entry<String, Double> o1, Map.Entry<String, Double> o2) {
-                return o2.getValue().compareTo(o1.getValue());
+        if (strengthAvg.size() == 0) {
+            System.out.println(String.format("%s店铺wifi频次很低...", key.getString("shop_id")));
+            for (String id : wifiCount.keySet()) {
+                strengthAvg.put(id, (double) (strengthSum.get(id) / wifiCount.get(id)));
             }
-        });
+        }
+        // 按照wifi强度降序排序
+        List<Map.Entry<String, Double>> wifiList = Sorted.sort(strengthAvg);
         // 写入结果
         result.setString("shop_id", key.getString("shop_id"));
-        for (int i = 0; i < wifiList.size(); i++) {
-            result.setString("bssid" + i, wifiList.get(i).getKey());
-            result.setDouble("strength" + i, wifiList.get(i).getValue());
-        }
+        result.setString("shop_agg_wifi", Serializer.serialize(wifiList));
+        result.setBigint("wifi_count", (long) wifiList.size());
         context.write(result);
     }
+
 }

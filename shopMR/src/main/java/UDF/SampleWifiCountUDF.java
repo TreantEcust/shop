@@ -1,13 +1,15 @@
-import com.aliyun.odps.udf.UDF;
+package UDF;
+
+import Base.BaseUDF;
 
 import java.util.HashMap;
 import java.util.Map;
 
 /**
  * Created by wangdexun on 2017/11/23.
- * 统计每条记录去重后的bssid数量
+ * 统计每条样本去重后的bssid数量
  */
-public class ShopWifiCount extends UDF {
+public class SampleWifiCountUDF extends BaseUDF {
     public String evaluate(String s) {
         String[] wifiArray = s.split(";");
         Map<String, Integer> wifiCount = new HashMap<String, Integer>();

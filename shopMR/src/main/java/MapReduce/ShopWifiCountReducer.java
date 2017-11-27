@@ -1,3 +1,5 @@
+package MapReduce;
+
 import com.aliyun.odps.data.Record;
 import com.aliyun.odps.mapred.ReducerBase;
 
